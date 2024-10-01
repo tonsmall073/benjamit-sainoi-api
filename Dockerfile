@@ -8,4 +8,6 @@ RUN go mod tidy
 
 EXPOSE 8000
 
-CMD ["go", "run","main.go"]
+RUN go build -o myapp main.go
+
+CMD echo "s" | ./myapp

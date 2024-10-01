@@ -1,4 +1,4 @@
-module benjamit
+module bjm
 
 go 1.23.1
 

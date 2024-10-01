@@ -4,5 +4,6 @@ services:
   backend:
     container_name: benjamitGo
     build: .
-    posts: 8000:8000
+    ports: 
+      - "8000:8000"
     restart: always

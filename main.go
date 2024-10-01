@@ -1,15 +1,16 @@
 package main
 
 import (
-	"benjamit/src/v1/product"
-	"benjamit/src/v1/user" // เปลี่ยนตามชื่อโปรเจกต์ของคุณ
+	"bjm/src/v1/product"
+	"bjm/src/v1/user"
+
 	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
-	"benjamit/db"
+	"bjm/db"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -22,23 +23,26 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Do you want to start server api Press (S)")
+	fmt.Println("Do you want to Start Server API Press (S)")
 	fmt.Println("Do you want to Migrate Press (M)")
-	fmt.Print("Please press the button you want to run. : ")
+	fmt.Println("Do you want to Database Seeding Press (I)")
+	fmt.Print("Please press the key you want to run. : ")
 
 	input, _ := reader.ReadString('\n')
 	pressed := strings.TrimSpace(input) // ลบ whitespace และ newline
 
 	if pressed == "S" || pressed == "s" {
-		startServer()
+		startServerApi()
 	} else if pressed == "M" || pressed == "m" {
 		startMigrateDB()
+	} else if pressed == "I" || pressed == "i" {
+		StartSeeding()
 	} else {
 		fmt.Println("Invalid input terminates.")
 	}
 }
 
-func startServer() {
+func startServerApi() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
@@ -56,4 +60,8 @@ func startServer() {
 
 func startMigrateDB() {
 	db.Migrate()
+}
+
+func StartSeeding() {
+	db.Seed()
 }

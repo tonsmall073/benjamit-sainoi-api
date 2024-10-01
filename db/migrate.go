@@ -1,8 +1,8 @@
 package db
 
 import (
-	"benjamit/db/benjamit"
-	"benjamit/db/benjamit/models"
+	"bjm/db/benjamit"
+	"bjm/db/benjamit/models"
 	"log"
 )
 
