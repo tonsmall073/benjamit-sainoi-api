@@ -39,7 +39,7 @@ func main() {
 	} else if pressed == "M" || pressed == "m" {
 		startMigrateDB()
 	} else if pressed == "I" || pressed == "i" {
-		StartSeeder()
+		startSeeder()
 	} else if pressed == "D" || pressed == "d" {
 		startDropAllTablesInDbBenjanit()
 	} else {
@@ -67,7 +67,7 @@ func startMigrateDB() {
 	db.Migrate()
 }
 
-func StartSeeder() {
+func startSeeder() {
 	db.Seeder()
 }
 
