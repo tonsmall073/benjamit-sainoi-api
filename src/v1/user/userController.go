@@ -27,15 +27,13 @@ func createUser(c *fiber.Ctx) error {
 	resModel := &dto.CreateUserResponseModel{}
 	err := c.BodyParser(reqModel)
 	if err != nil {
-		resModel.Status = 400
-		resModel.MessageDesc = err.Error()
-		return utils.FiberResponseJson(c, resModel, resModel.Status)
+		return utils.FiberResponseErrorJson(c, err.Error(), 400)
 	}
 
 	context, _ := db.Connect()
 	service := &UserService{context}
 	serviceRes := service.CreateUser(reqModel, resModel)
-	return utils.FiberResponseJson(c, serviceRes, serviceRes.Status)
+	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
 }
 
 func updateUser(c *fiber.Ctx) error {

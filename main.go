@@ -3,6 +3,7 @@ package main
 import (
 	"bjm/src/v1/product"
 	"bjm/src/v1/user"
+	"bjm/utils"
 
 	"bufio"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"strings"
 
 	"bjm/db"
+	con "bjm/db/benjamit"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -26,6 +28,7 @@ func main() {
 	fmt.Println("Do you want to Start Server API Press (S)")
 	fmt.Println("Do you want to Migrate Press (M)")
 	fmt.Println("Do you want to Database Seeding Press (I)")
+	fmt.Println("Do you want to Drop ALL Tables in database name Benjamit Press (D)")
 	fmt.Print("Please press the key you want to run. : ")
 
 	input, _ := reader.ReadString('\n')
@@ -36,7 +39,9 @@ func main() {
 	} else if pressed == "M" || pressed == "m" {
 		startMigrateDB()
 	} else if pressed == "I" || pressed == "i" {
-		StartSeeding()
+		StartSeeder()
+	} else if pressed == "D" || pressed == "d" {
+		startDropAllTablesInDbBenjanit()
 	} else {
 		fmt.Println("Invalid input terminates.")
 	}
@@ -62,6 +67,11 @@ func startMigrateDB() {
 	db.Migrate()
 }
 
-func StartSeeding() {
-	db.Seed()
+func StartSeeder() {
+	db.Seeder()
+}
+
+func startDropAllTablesInDbBenjanit() {
+	context, _ := con.Connect()
+	utils.DropAllTables(context)
 }

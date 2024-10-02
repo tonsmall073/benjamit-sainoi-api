@@ -4,7 +4,9 @@ import (
 	model "bjm/db/benjamit/models"
 	"bjm/src/v1/user/dto"
 	"bjm/utils"
+	"errors"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -16,19 +18,44 @@ func (s *UserService) CreateUser(
 	reqModel *dto.CreateUserRequestModel,
 	resModel *dto.CreateUserResponseModel,
 ) *dto.CreateUserResponseModel {
+	endcodePass, endCodePassErr := utils.HashPassword(reqModel.Password)
+	if endCodePassErr != nil {
+		resModel.StatusCode = 500
+		resModel.MessageDesc = endCodePassErr.Error()
+		return resModel
+	}
+	uuid, uuidErr := uuid.Parse(reqModel.PrefixUuid)
+	if uuidErr != nil {
+		resModel.StatusCode = 400
+		resModel.MessageDesc = "Invalid UUID format " + reqModel.PrefixUuid
+		return resModel
+	}
+	getPrefix, getPrefixErr := s.getPrefixByUuid(uuid)
+	if getPrefixErr != nil {
+		resModel.StatusCode = 400
+		resModel.MessageDesc = getPrefixErr.Error()
+		return resModel
+	}
+
 	insert, insertErr := s.insertUser(&model.User{
-		Lastname:  reqModel.Lastname,
+		Username:  reqModel.Username,
+		Password:  endcodePass,
+		Nickname:  reqModel.Nickname,
 		Firstname: reqModel.Firstname,
-		PrefixId:  0,
+		Lastname:  reqModel.Lastname,
+		PrefixId:  int(getPrefix.ID),
 		Birthday:  reqModel.Birthday.Time(),
+		Email:     reqModel.Email,
 	})
 
 	if insertErr != nil {
-		resModel.Status = 500
+		resModel.StatusCode = 500
 		resModel.MessageDesc = insertErr.Error()
+		return resModel
 	}
-	s.mapCreateUserResponse(insert, resModel)
-	resModel.Status = 200
+
+	s.mapCreateUserResponse(insert, getPrefix, resModel)
+	resModel.StatusCode = 200
 	resModel.MessageDesc = utils.HttpStatusCodes[200]
 
 	return resModel
@@ -41,8 +68,30 @@ func (s *UserService) insertUser(data *model.User) (*model.User, error) {
 	return data, nil
 }
 
-func (s *UserService) mapCreateUserResponse(data *model.User, resModel *dto.CreateUserResponseModel) {
-	resModel.Data.Username = data.Username
-	resModel.Data.Firstname = data.Firstname
-	resModel.Data.Lastname = data.Lastname
+func (s *UserService) getPrefixByUuid(uuid uuid.UUID) (*model.Prefix, error) {
+	prefix := &model.Prefix{}
+	result := s._context.Where("uuid = ?", uuid).First(prefix)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+
+			return nil, errors.New("uuid " + uuid.String() + " Prefix information not found.")
+		}
+		return nil, result.Error
+	}
+	return prefix, nil
+}
+
+func (s *UserService) mapCreateUserResponse(
+	userData *model.User,
+	prefixData *model.Prefix,
+	resModel *dto.CreateUserResponseModel,
+) {
+	data := &dto.CreateUserDataListResponseModel{
+		Username:   userData.Username,
+		PrefixName: prefixData.Name,
+		Nickname:   userData.Nickname,
+		Firstname:  userData.Firstname,
+		Lastname:   userData.Lastname,
+	}
+	resModel.Data = data
 }
