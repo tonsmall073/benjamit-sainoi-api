@@ -1,0 +1,19 @@
+version: '4.0'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: database
+    environment:
+      POSTGRES_DB: benjamit
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      
+    restart: always
+
+volumes:
+  pgdata: {}

@@ -22,6 +22,6 @@ func Connect() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	log.Println("Connected to the PostgreSQL database successfully!")
+	// log.Println("Connected to the PostgreSQL database successfully!")
 	return db, nil
 }

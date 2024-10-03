@@ -8,7 +8,7 @@ func Setup(route fiber.Router) {
 	group := route.Group("/user")
 	group.Get("/", getUsers)
 	group.Get("/:id", getUserByID)
-	group.Post("/createUser", createUser)
+	group.Post("/create", createUser)
 	group.Put("/:id", updateUser)
 	group.Delete("/:id", deleteUser)
 }
