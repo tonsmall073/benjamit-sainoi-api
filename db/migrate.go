@@ -11,7 +11,7 @@ import (
 func Migrate() {
 	db, _ := benjamit.Connect()
 	if err := createUUIDExtension(db); err != nil {
-		log.Fatal("failed to create uuid-ossp extension:", err)
+		log.Printf("[ERROR] failed to create uuid-ossp extension: %v", err)
 		return
 	}
 
@@ -21,7 +21,8 @@ func Migrate() {
 	)
 
 	if err != nil {
-		log.Fatalf("failed to migrate database: %v", err)
+		log.Printf("[ERROR] failed to migrate database: %v", err)
+		return
 	}
 
 	log.Println("The migration is complete.")

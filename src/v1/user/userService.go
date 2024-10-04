@@ -8,6 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+
+	auth "bjm/auth/jwt"
 )
 
 type UserService struct {
@@ -61,6 +63,46 @@ func (s UserService) CreateUser(
 	return resModel
 }
 
+func (s UserService) Login(
+	reqModel *dto.LoginRequestModel,
+	resModel *dto.LoginResponseModel,
+) *dto.LoginResponseModel {
+	if reqModel.Username == "" {
+		resModel.MessageDesc = "username is empty or undefined"
+		resModel.StatusCode = 400
+		return resModel
+	}
+	if reqModel.Password == "" {
+		resModel.MessageDesc = "password is empty or undefined"
+		resModel.StatusCode = 400
+		return resModel
+	}
+
+	data, dataErr := s.fetchUserByUsername(reqModel.Username)
+	if dataErr != nil {
+		resModel.MessageDesc = dataErr.Error()
+		resModel.StatusCode = 400
+		return resModel
+	}
+	resCheck := utils.CheckPasswordHash(reqModel.Password, data.Password)
+	if !resCheck {
+		resModel.MessageDesc = "the password is incorrect"
+		resModel.StatusCode = 400
+		return resModel
+	}
+	getToken, getTokenErr := auth.CreateToken(data.Username, data.UUID.String(), "user")
+	if getTokenErr != nil {
+		resModel.MessageDesc = getTokenErr.Error()
+		resModel.StatusCode = 500
+		return resModel
+	}
+
+	s.mapLoginResponseModel(data, getToken, resModel)
+	resModel.StatusCode = 200
+	resModel.MessageDesc = utils.HttpStatusCodes[200]
+	return resModel
+}
+
 func (s UserService) insertUser(data model.User) (model.User, error) {
 	if err := s._context.Create(&data).Error; err != nil {
 		return data, err
@@ -73,12 +115,23 @@ func (s UserService) fetchPrefixByUuid(uuid uuid.UUID) (model.Prefix, error) {
 	result := s._context.Where("uuid = ?", uuid).First(&prefix)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-
-			return prefix, errors.New("uuid " + uuid.String() + " Prefix information not found.")
+			return prefix, errors.New("uuid " + uuid.String() + " prefix information not found")
 		}
 		return prefix, result.Error
 	}
 	return prefix, nil
+}
+
+func (s UserService) fetchUserByUsername(username string) (model.User, error) {
+	user := model.User{}
+	result := s._context.Preload("Prefix").Where("username = ?", username).First(&user)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return user, errors.New("the username is incorrect")
+		}
+		return user, result.Error
+	}
+	return user, nil
 }
 
 func (s UserService) mapCreateUserResponseModel(
@@ -92,6 +145,22 @@ func (s UserService) mapCreateUserResponseModel(
 		Nickname:   userData.Nickname,
 		Firstname:  userData.Firstname,
 		Lastname:   userData.Lastname,
+	}
+	resModel.Data = data
+}
+
+func (s UserService) mapLoginResponseModel(
+	userData model.User,
+	token string,
+	resModel *dto.LoginResponseModel,
+) {
+	data := &dto.LoginDataListResponseModel{
+		AccessToken: token,
+		Username:    userData.Username,
+		PrefixName:  userData.Prefix.Name,
+		Nickname:    userData.Nickname,
+		Firstname:   userData.Firstname,
+		Lastname:    userData.Lastname,
 	}
 	resModel.Data = data
 }

@@ -1,14 +1,19 @@
 package user
 
 import (
+	auth "bjm/auth/jwt"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 func Setup(route fiber.Router) {
 	group := route.Group("/user")
-	group.Get("/", getUsers)
-	group.Get("/:id", getUserByID)
 	group.Post("/create", createUser)
-	group.Put("/:id", updateUser)
-	group.Delete("/:id", deleteUser)
+	group.Post("/login", login)
+
+	authGroup := group.Group("", auth.UseGuard)
+	authGroup.Get("/profile", getProfile)
+	authGroup.Put("/update", updateUser)
+	authGroup.Delete("/delete", deleteUser)
+
 }
