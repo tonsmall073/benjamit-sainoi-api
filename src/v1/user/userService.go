@@ -103,6 +103,21 @@ func (s UserService) Login(
 	return resModel
 }
 
+func (s UserService) GetProfile(
+	uuid string, resModel *dto.GetProfileResponseModel,
+) *dto.GetProfileResponseModel {
+	data, dataErr := s.fetchUserByUuid(uuid)
+	if dataErr != nil {
+		resModel.StatusCode = 400
+		resModel.MessageDesc = dataErr.Error()
+		return resModel
+	}
+	s.mapGetProfileResponseModel(data, resModel)
+	resModel.StatusCode = 200
+	resModel.MessageDesc = utils.HttpStatusCodes[200]
+	return resModel
+}
+
 func (s UserService) insertUser(data model.User) (model.User, error) {
 	if err := s._context.Create(&data).Error; err != nil {
 		return data, err
@@ -128,6 +143,18 @@ func (s UserService) fetchUserByUsername(username string) (model.User, error) {
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return user, errors.New("the username is incorrect")
+		}
+		return user, result.Error
+	}
+	return user, nil
+}
+
+func (s UserService) fetchUserByUuid(uuid string) (model.User, error) {
+	user := model.User{}
+	result := s._context.Preload("Prefix").Where("uuid = ?", uuid).First(&user)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return user, errors.New("user information not found")
 		}
 		return user, result.Error
 	}
@@ -161,6 +188,24 @@ func (s UserService) mapLoginResponseModel(
 		Nickname:    userData.Nickname,
 		Firstname:   userData.Firstname,
 		Lastname:    userData.Lastname,
+	}
+	resModel.Data = data
+}
+
+func (s UserService) mapGetProfileResponseModel(
+	userData model.User,
+	resModel *dto.GetProfileResponseModel,
+) {
+	data := &dto.GetProfileDataListResponseModel{
+		PrefixName:    userData.Prefix.Name,
+		Firstname:     userData.Firstname,
+		Lastname:      userData.Lastname,
+		Nickname:      userData.Nickname,
+		Birthday:      userData.Birthday,
+		Email:         userData.Email,
+		LineId:        userData.LineId,
+		MobilePhoneNo: userData.HomePhoneNo,
+		HomePhoneNo:   userData.HomePhoneNo,
 	}
 	resModel.Data = data
 }

@@ -45,10 +45,14 @@ func login(c *fiber.Ctx) error {
 
 func getProfile(c *fiber.Ctx) error {
 	data := auth.DecodeToken(c)
-	return c.JSON(fiber.Map{
-		"uuid":        data["uuid"],
-		"messageDesc": "Get all users",
-	})
+	resModel := &dto.GetProfileResponseModel{}
+	context, contextErr := db.Connect()
+	if contextErr != nil {
+		return utils.FiberResponseErrorJson(c, contextErr.Error(), 500)
+	}
+	service := &UserService{context}
+	serviceRes := service.GetProfile(data["uuid"].(string), resModel)
+	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
 }
 
 func updateUser(c *fiber.Ctx) error {
