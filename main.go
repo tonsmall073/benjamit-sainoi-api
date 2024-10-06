@@ -55,7 +55,7 @@ func startServerApi() {
 	app := fiber.New()
 	middlewares.UseSwagger(app)
 	middlewares.UseFiberCors(app)
-	route := middlewares.UseLog(app)
+	route := middlewares.UseApiTransactionLog(app)
 	v1.UseRoute(route)
 
 	// v1.UseRoute(app.Group(""))

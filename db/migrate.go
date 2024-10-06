@@ -18,7 +18,7 @@ func Migrate() {
 	err := db.AutoMigrate(
 		&models.Prefix{},
 		&models.User{},
-		&models.Log{},
+		&models.ApiTransactionLog{},
 	)
 
 	if err != nil {

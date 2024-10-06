@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Log struct {
+type ApiTransactionLog struct {
 	gorm.Model
 	UUID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"uuid"`
 	Path         string    `gorm:"not null"`

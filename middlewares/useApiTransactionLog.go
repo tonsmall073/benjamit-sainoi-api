@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	model "bjm/db/benjamit/models"
+	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -29,7 +30,7 @@ func deleteOldLogs(db *gorm.DB) {
 		}
 	}
 	thirtyDaysAgo := time.Now().AddDate(0, 0, -day)
-	if err := db.Where("created_at < ?", thirtyDaysAgo).Delete(&model.Log{}).Error; err != nil {
+	if err := db.Where("created_at < ?", thirtyDaysAgo).Delete(&model.ApiTransactionLog{}).Error; err != nil {
 		log.Printf("[ERROR] failed to delete old logs: %v\n", err)
 	} else {
 		log.Printf("[INFO] Deleted logs older than %d days\n", day)
@@ -40,9 +41,22 @@ func logCleanupTask(db *gorm.DB) {
 	ticker := time.NewTicker(24 * time.Hour)
 	defer ticker.Stop()
 
+	var initialDb *gorm.DB = db
+	var initialDbErr error
+
 	for {
 		<-ticker.C
-		deleteOldLogs(db)
+
+		if err := initialDb.WithContext(context.Background()).Error; err != nil {
+			log.Printf("[WARN] Database connection lost: %v. Retrying...\n", err)
+			initialDb, initialDbErr = con.Connect()
+			if initialDbErr != nil {
+				log.Printf("[ERROR] failed to connect to database: %v\n", initialDbErr)
+				continue
+			}
+		}
+
+		deleteOldLogs(initialDb)
 	}
 }
 
@@ -67,7 +81,7 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 		origin := c.Get("Origin")
 		c.Set("Access-Control-Allow-Origin", origin)
 
-		responseLog := model.Log{
+		responseLog := model.ApiTransactionLog{
 			Path:         c.Path(),
 			Method:       c.Method(),
 			ContentType:  c.Get("Content-Type"),
@@ -87,7 +101,7 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 	}
 }
 
-func UseLog(app *fiber.App) fiber.Router {
+func UseApiTransactionLog(app *fiber.App) fiber.Router {
 	db, dbErr := con.Connect()
 	if dbErr != nil {
 		log.Printf("[ERROR] failed to connect to database: %v\n", dbErr)

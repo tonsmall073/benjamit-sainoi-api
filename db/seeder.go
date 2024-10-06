@@ -18,7 +18,7 @@ func Seeder() {
 	data := []interface{}{
 		seeds.Prefix(),
 		seeds.User(),
-		// seeds.Log(),
+		// seeds.ApiTransactionLog(),
 	}
 	insertData(db, data)
 }
