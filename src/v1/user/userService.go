@@ -127,7 +127,7 @@ func (s UserService) insertUser(data model.User) (model.User, error) {
 
 func (s UserService) fetchPrefixByUuid(uuid uuid.UUID) (model.Prefix, error) {
 	prefix := model.Prefix{}
-	result := s._context.Where("uuid = ?", uuid).First(&prefix)
+	result := s._context.Where("uuid = ? AND deleted_at IS NULL", uuid).First(&prefix)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return prefix, errors.New("uuid " + uuid.String() + " prefix information not found")
@@ -139,7 +139,7 @@ func (s UserService) fetchPrefixByUuid(uuid uuid.UUID) (model.Prefix, error) {
 
 func (s UserService) fetchUserByUsername(username string) (model.User, error) {
 	user := model.User{}
-	result := s._context.Preload("Prefix").Where("username = ?", username).First(&user)
+	result := s._context.Preload("Prefix").Where("username = ? AND deleted_at IS NULL", username).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return user, errors.New("the username is incorrect")
@@ -151,7 +151,7 @@ func (s UserService) fetchUserByUsername(username string) (model.User, error) {
 
 func (s UserService) fetchUserByUuid(uuid string) (model.User, error) {
 	user := model.User{}
-	result := s._context.Preload("Prefix").Where("uuid = ?", uuid).First(&user)
+	result := s._context.Preload("Prefix").Where("uuid = ? AND deleted_at IS NULL", uuid).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return user, errors.New("user information not found")

@@ -24,7 +24,6 @@ func User() []models.User {
 			LineId:        "tonsmall073",
 			MobilePhoneNo: "0819999999",
 			HomePhoneNo:   "029999999",
-			Active:        true,
 		},
 	}
 	return data

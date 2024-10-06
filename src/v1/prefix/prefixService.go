@@ -14,7 +14,7 @@ type PrefixService struct {
 
 func (s PrefixService) GetAllPrefix(resModel *dto.GetAllPrefixResponseModel) *dto.GetAllPrefixResponseModel {
 
-	data, dataErr := s.fetchAllPrefixByActive(true)
+	data, dataErr := s.fetchAllPrefix()
 	if dataErr != nil {
 		resModel.StatusCode = 500
 		resModel.MessageDesc = dataErr.Error()
@@ -26,9 +26,9 @@ func (s PrefixService) GetAllPrefix(resModel *dto.GetAllPrefixResponseModel) *dt
 	return resModel
 }
 
-func (s PrefixService) fetchAllPrefixByActive(active bool) ([]models.Prefix, error) {
+func (s PrefixService) fetchAllPrefix() ([]models.Prefix, error) {
 	prefixes := []models.Prefix{}
-	if err := s._context.Where("active = ?", active).Find(&prefixes).Error; err != nil {
+	if err := s._context.Where("deleted_at IS NULL").Find(&prefixes).Error; err != nil {
 		return prefixes, err
 	}
 	return prefixes, nil

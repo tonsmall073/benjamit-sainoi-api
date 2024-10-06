@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func UseRoute(app *fiber.App) {
+func UseRoute(app fiber.Router) {
 	route := app.Group("/v1")
 	prefix.Setup(route)
 	user.Setup(route)

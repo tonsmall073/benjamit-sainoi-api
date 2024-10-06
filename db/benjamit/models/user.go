@@ -22,5 +22,4 @@ type User struct {
 	LineId        string    `gorm:"default:null"`
 	MobilePhoneNo string    `gorm:"default:null"`
 	HomePhoneNo   string    `gorm:"default:null"`
-	Active        bool      `gorm:"default:true"`
 }

@@ -11,17 +11,18 @@ import (
 func Migrate() {
 	db, _ := benjamit.Connect()
 	if err := createUUIDExtension(db); err != nil {
-		log.Printf("[ERROR] failed to create uuid-ossp extension: %v", err)
+		log.Printf("[ERROR] failed to create uuid-ossp extension: %v\n", err)
 		return
 	}
 
 	err := db.AutoMigrate(
 		&models.Prefix{},
 		&models.User{},
+		&models.Log{},
 	)
 
 	if err != nil {
-		log.Printf("[ERROR] failed to migrate database: %v", err)
+		log.Printf("[ERROR] failed to migrate database: %v\n", err)
 		return
 	}
 

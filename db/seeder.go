@@ -18,6 +18,7 @@ func Seeder() {
 	data := []interface{}{
 		seeds.Prefix(),
 		seeds.User(),
+		// seeds.Log(),
 	}
 	insertData(db, data)
 }
@@ -26,10 +27,10 @@ func insertData(db *gorm.DB, data []interface{}) {
 	for _, item := range data {
 		modelName := reflect.TypeOf(item).Elem().Name()
 		if err := db.Create(item).Error; err != nil {
-			log.Fatal(err)
+			log.Printf("[ERROR] insert data '%s' fail error : '%s'\n", modelName, err.Error())
 		} else {
 			log.Printf("insert data '%s' success.\n", modelName)
 		}
 	}
-	log.Println("Finished sprinkling the seeds.")
+	log.Println("finished sprinkling the seeds.")
 }
