@@ -20,6 +20,7 @@ func createUser(c *fiber.Ctx) error {
 	if contextErr != nil {
 		return utils.FiberResponseErrorJson(c, contextErr.Error(), 500)
 	}
+	defer db.ConnectClose(context)
 
 	service := &UserService{context}
 	serviceRes := service.CreateUser(reqModel, resModel)
@@ -37,6 +38,7 @@ func login(c *fiber.Ctx) error {
 	if contextErr != nil {
 		return utils.FiberResponseErrorJson(c, contextErr.Error(), 500)
 	}
+	defer db.ConnectClose(context)
 
 	service := &UserService{context}
 	serviceRes := service.Login(reqModel, resModel)
@@ -50,6 +52,8 @@ func getProfile(c *fiber.Ctx) error {
 	if contextErr != nil {
 		return utils.FiberResponseErrorJson(c, contextErr.Error(), 500)
 	}
+	defer db.ConnectClose(context)
+
 	service := &UserService{context}
 	serviceRes := service.GetProfile(data["uuid"].(string), resModel)
 	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)

@@ -25,3 +25,15 @@ func Connect() (*gorm.DB, error) {
 	// log.Println("Connected to the PostgreSQL database successfully!")
 	return db, nil
 }
+
+func ConnectClose(db *gorm.DB) {
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Printf("[ERROR] failed to get underlying DB: %v\n", err)
+		return
+	}
+	if err := sqlDB.Close(); err != nil {
+		log.Printf("[ERROR] failed to close database connection: %v\n", err)
+		return
+	}
+}

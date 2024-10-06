@@ -13,6 +13,8 @@ func getAllPrefix(c *fiber.Ctx) error {
 	if contextErr != nil {
 		return utils.FiberResponseErrorJson(c, contextErr.Error(), 500)
 	}
+	defer db.ConnectClose(context)
+
 	resModel := &dto.GetAllPrefixResponseModel{}
 	service := &PrefixService{context}
 	serviceRes := service.GetAllPrefix(resModel)
