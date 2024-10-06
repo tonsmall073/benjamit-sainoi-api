@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	model "bjm/db/benjamit/models"
-	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -41,22 +40,19 @@ func logCleanupTask(db *gorm.DB) {
 	ticker := time.NewTicker(24 * time.Hour)
 	defer ticker.Stop()
 
-	var initialDb *gorm.DB = db
-	var initialDbErr error
-
 	for {
 		<-ticker.C
-
-		if err := initialDb.WithContext(context.Background()).Error; err != nil {
-			log.Printf("[WARN] Database connection lost: %v. Retrying...\n", err)
-			initialDb, initialDbErr = con.Connect()
-			if initialDbErr != nil {
-				log.Printf("[ERROR] failed to connect to database: %v\n", initialDbErr)
-				continue
-			}
+		sqlDB, err := db.DB()
+		if err != nil {
+			log.Printf("[ERROR] failed to get underlying DB: %v\n", err)
+			continue
 		}
 
-		deleteOldLogs(initialDb)
+		if pingErr := sqlDB.Ping(); pingErr != nil {
+			log.Printf("[WARN] Database connection lost: %v. Retrying...\n", pingErr)
+			continue
+		}
+		deleteOldLogs(db)
 	}
 }
 
