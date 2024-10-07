@@ -1,21 +1,21 @@
 package dto
 
 import (
-	types "bjm/utils"
+	"time"
 )
 
 type CreateUserRequestModel struct {
-	Username      string     `json:"username"`
-	Password      string     `json:"password"`
-	PrefixUuid    string     `json:"prefixUuid"`
-	Nickname      string     `json:"nickname"`
-	Firstname     string     `json:"firstname"`
-	Lastname      string     `json:"lastname"`
-	Birthday      types.Date `json:"birthday"`
-	Email         string     `json:"email"`
-	LindId        string     `json:"lindid"`
-	MobilePhoneNo string     `json:"mobilePhoneNo"`
-	HomePhoneNo   string     `json:"homePhoneNostring"`
+	Username      string    `json:"username"`
+	Password      string    `json:"password"`
+	PrefixUuid    string    `json:"prefixUuid"`
+	Nickname      string    `json:"nickname"`
+	Firstname     string    `json:"firstname"`
+	Lastname      string    `json:"lastname"`
+	Birthday      time.Time `json:"birthday"`
+	Email         string    `json:"email"`
+	LindId        string    `json:"lindid"`
+	MobilePhoneNo string    `json:"mobilePhoneNo"`
+	HomePhoneNo   string    `json:"homePhoneNostring"`
 }
 
 type CreateUserResponseModel struct {

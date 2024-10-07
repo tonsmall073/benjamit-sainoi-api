@@ -14,6 +14,10 @@ func Migrate() {
 		log.Printf("[ERROR] failed to create uuid-ossp extension: %v\n", err)
 		return
 	}
+	if err := setTimeZone(db); err != nil {
+		log.Printf("[ERROR] failed to set time zone: %v\n", err)
+		return
+	}
 
 	err := db.AutoMigrate(
 		&models.Prefix{},
@@ -31,4 +35,8 @@ func Migrate() {
 
 func createUUIDExtension(db *gorm.DB) error {
 	return db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";").Error
+}
+
+func setTimeZone(db *gorm.DB) error {
+	return db.Exec("SET timezone = 'Asia/Bangkok';").Error
 }

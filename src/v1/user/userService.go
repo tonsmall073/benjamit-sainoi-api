@@ -46,7 +46,7 @@ func (s UserService) CreateUser(
 		Firstname: reqModel.Firstname,
 		Lastname:  reqModel.Lastname,
 		PrefixId:  int(getPrefix.ID),
-		Birthday:  reqModel.Birthday.Time(),
+		Birthday:  reqModel.Birthday,
 		Email:     reqModel.Email,
 	})
 
