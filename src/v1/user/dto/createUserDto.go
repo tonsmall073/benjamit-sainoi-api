@@ -25,9 +25,10 @@ type CreateUserResponseModel struct {
 }
 
 type CreateUserDataListResponseModel struct {
-	Username   string `json:"username"`
-	PrefixName string `json:"prefixName"`
-	Nickname   string `json:"nickname"`
-	Firstname  string `json:"firstname"`
-	Lastname   string `json:"lastname"`
+	Username   string    `json:"username"`
+	PrefixName string    `json:"prefixName"`
+	Nickname   string    `json:"nickname"`
+	Firstname  string    `json:"firstname"`
+	Lastname   string    `json:"lastname"`
+	Birthday   time.Time `json:"birthday"`
 }

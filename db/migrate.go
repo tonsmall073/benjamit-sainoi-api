@@ -4,6 +4,7 @@ import (
 	"bjm/db/benjamit"
 	"bjm/db/benjamit/models"
 	"log"
+	"os"
 
 	"gorm.io/gorm"
 )
@@ -38,5 +39,10 @@ func createUUIDExtension(db *gorm.DB) error {
 }
 
 func setTimeZone(db *gorm.DB) error {
-	return db.Exec("SET timezone = 'Asia/Bangkok';").Error
+	defaultStr := "Asia/Bangkok"
+
+	if getTimeZone := os.Getenv("BENJAMIT_POSTGRESQL_TIME_ZONE"); getTimeZone != "" {
+		defaultStr = getTimeZone
+	}
+	return db.Exec("SET timezone = '" + defaultStr + "';").Error
 }

@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 type LoginRequestModel struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -12,10 +14,11 @@ type LoginResponseModel struct {
 }
 
 type LoginDataListResponseModel struct {
-	AccessToken string `json:"accessToken"`
-	Username    string `json:"username"`
-	Nickname    string `json:"nickname"`
-	PrefixName  string `json:"prefixName"`
-	Firstname   string `json:"firstname"`
-	Lastname    string `json:"lastname"`
+	AccessToken string    `json:"accessToken"`
+	Username    string    `json:"username"`
+	Nickname    string    `json:"nickname"`
+	PrefixName  string    `json:"prefixName"`
+	Firstname   string    `json:"firstname"`
+	Lastname    string    `json:"lastname"`
+	Birthday    time.Time `json:"birthday"`
 }

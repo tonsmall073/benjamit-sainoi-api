@@ -53,6 +53,7 @@ func main() {
 
 func startServerApi() {
 	app := fiber.New()
+	middlewares.UseTimeZone(app)
 	middlewares.UseSwagger(app)
 	middlewares.UseFiberCors(app)
 	route := middlewares.UseApiTransactionLog(app)

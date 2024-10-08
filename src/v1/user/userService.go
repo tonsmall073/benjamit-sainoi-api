@@ -172,6 +172,7 @@ func (s UserService) mapCreateUserResponseModel(
 		Nickname:   userData.Nickname,
 		Firstname:  userData.Firstname,
 		Lastname:   userData.Lastname,
+		Birthday:   userData.Birthday,
 	}
 	resModel.Data = data
 }
@@ -188,6 +189,7 @@ func (s UserService) mapLoginResponseModel(
 		Nickname:    userData.Nickname,
 		Firstname:   userData.Firstname,
 		Lastname:    userData.Lastname,
+		Birthday:    userData.Birthday,
 	}
 	resModel.Data = data
 }
