@@ -15,7 +15,8 @@ func Connect() (*gorm.DB, error) {
 	dbname := os.Getenv("BENJAMIT_CONNECT_POSTGRESQL_DBNAME")
 	post := os.Getenv("BENJAMIT_CONNECT_POSTGRESQL_POST")
 	sslmode := os.Getenv("BENJAMIT_CONNECT_POSTGRESQL_SSLMODE")
-	dsn := "host=" + host + " user=" + user + " password=" + pass + " dbname=" + dbname + " port=" + post + " sslmode=" + sslmode
+	timeZone := os.Getenv("BENJAMIT_POSTGRESQL_TIME_ZONE")
+	dsn := "host=" + host + " user=" + user + " password=" + pass + " dbname=" + dbname + " port=" + post + " sslmode=" + sslmode + " TimeZone=" + timeZone
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Printf("[ERROR] failed to connect to database: %v\n", err)

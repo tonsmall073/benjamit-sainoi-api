@@ -17,7 +17,7 @@ type User struct {
 	Firstname     string    `gorm:"not null"`
 	Lastname      string    `gorm:"not null"`
 	Nickname      string    `gorm:"default:null"`
-	Birthday      time.Time `json:"birthday"`
+	Birthday      time.Time `gorm:"type:timestamp"`
 	Email         string    `gorm:"unique;not null"`
 	LineId        string    `gorm:"default:null"`
 	MobilePhoneNo string    `gorm:"default:null"`

@@ -44,5 +44,9 @@ func setTimeZone(db *gorm.DB) error {
 	if getTimeZone := os.Getenv("BENJAMIT_POSTGRESQL_TIME_ZONE"); getTimeZone != "" {
 		defaultStr = getTimeZone
 	}
-	return db.Exec("SET timezone = '" + defaultStr + "';").Error
+	err := db.Exec("SET timezone = '" + defaultStr + "';").Error
+	var timezone string
+	db.Raw("SHOW TIMEZONE").Scan(&timezone)
+	log.Println("Current Timezone:", timezone)
+	return err
 }
