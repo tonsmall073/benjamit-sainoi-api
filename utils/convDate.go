@@ -2,11 +2,11 @@ package utils
 
 import "time"
 
-func ConvUnixtime(datetime string) (time.Time, error) {
+func ConvDateStringToTimeType(datetime string) (time.Time, error) {
 	layout := time.RFC3339 // รูปแบบวันที่
-	unixTime, unixTimeErr := time.Parse(layout, datetime)
-	if unixTimeErr != nil {
-		return time.Time{}, unixTimeErr
+	date, dateErr := time.Parse(layout, datetime)
+	if dateErr != nil {
+		return time.Time{}, dateErr
 	}
-	return unixTime, nil
+	return date, nil
 }

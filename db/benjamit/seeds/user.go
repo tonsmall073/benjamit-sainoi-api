@@ -3,13 +3,8 @@ package seeds
 import (
 	"bjm/db/benjamit/models"
 	"bjm/utils"
-	"time"
 )
 
-func unixTime(timestamp string) time.Time {
-	unix, _ := utils.ConvUnixtime(timestamp)
-	return unix
-}
 func User() []models.User {
 	data := []models.User{
 		{
@@ -19,7 +14,7 @@ func User() []models.User {
 			Nickname:      "ต้น",
 			Firstname:     "วิศรุต",
 			Lastname:      "รูปเขียน",
-			Birthday:      unixTime("1992-01-11T21:22:23.000Z"),
+			Birthday:      utils.ConvTime("1992-01-11T21:22:23.000Z"),
 			Email:         "tonsmall073@gmail.com",
 			LineId:        "tonsmall073",
 			MobilePhoneNo: "0819999999",
