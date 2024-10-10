@@ -57,8 +57,8 @@ func (s UserService) CreateUser(
 	}
 
 	s.mapCreateUserResponseModel(insert, getPrefix, resModel)
-	resModel.StatusCode = 200
-	resModel.MessageDesc = utils.HttpStatusCodes[200]
+	resModel.StatusCode = 201
+	resModel.MessageDesc = utils.HttpStatusCodes[201]
 
 	return resModel
 }

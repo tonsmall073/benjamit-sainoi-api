@@ -2,6 +2,7 @@ package main
 
 import (
 	v1 "bjm/src/v1"
+	v2 "bjm/src/v2"
 	"bjm/utils"
 
 	"bufio"
@@ -16,13 +17,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 
+	_ "bjm/docs"
 	"bjm/middlewares"
 )
 
-// @title Swagger API Docs
-// @version 1.0
-// @description -
-// @BasePath /v1
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -36,7 +34,7 @@ func main() {
 	fmt.Print("Please press the key you want to run. : ")
 
 	input, _ := reader.ReadString('\n')
-	pressed := strings.TrimSpace(input) // ลบ whitespace และ newline
+	pressed := strings.TrimSpace(input)
 
 	if pressed == "S" || pressed == "s" {
 		startServerApi()
@@ -51,15 +49,23 @@ func main() {
 	}
 }
 
+// @title Swagger API Docs
+// @version 1.0
+// @description Benjamit API
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" <JWT token>.
 func startServerApi() {
 	app := fiber.New()
 	middlewares.UseTimeZone(app)
-	middlewares.UseSwagger(app)
 	middlewares.UseFiberCors(app)
 	route := middlewares.UseApiTransactionLog(app)
-	v1.UseRoute(route)
 
-	// v1.UseRoute(app.Group(""))
+	middlewares.UseSwagger(app)
+	v1.UseRoute(route)
+	v2.UseRoute(route)
 
 	app.Listen(":" + os.Getenv("SERVER_POST"))
 }

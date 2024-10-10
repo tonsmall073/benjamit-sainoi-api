@@ -6,9 +6,12 @@ import (
 )
 
 func UseSwagger(app *fiber.App) {
-	app.Get("/v1/swagger/*", swagger.HandlerDefault)
-
-	app.Get("/v1/swagger.json", func(c *fiber.Ctx) error {
-		return c.SendFile("./docs/v1/swagger.json")
+	app.Get("/swagger/*", swagger.HandlerDefault)
+	app.Get("/swagger.json", func(c *fiber.Ctx) error {
+		err := c.SendFile("./docs/swagger.json")
+		if err != nil {
+			return c.Status(500).SendString("Failed to serve swagger.json: " + err.Error())
+		}
+		return nil
 	})
 }

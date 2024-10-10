@@ -8,7 +8,7 @@ RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 RUN go mod tidy
 
-RUN swag init -o docs/v1
+RUN swag init
 
 RUN go build -o myapp main.go
 

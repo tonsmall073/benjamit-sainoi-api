@@ -9,6 +9,15 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// @Tags User
+// @Description Create a user by filling in user information.
+// @Accept json
+// @Produce json
+// @Param input body dto.CreateUserRequestModel true "Login Request"
+// @Success 201 {object} dto.CreateUserResponseModel
+// @Failure 400 {object} utils.ErrorResponseModel "invalid input"
+// @Failure 500 {object} utils.ErrorResponseModel "internal server error"
+// @Router /v1/user/create [post]
 func createUser(c *fiber.Ctx) error {
 	reqModel := &dto.CreateUserRequestModel{}
 	resModel := &dto.CreateUserResponseModel{}
@@ -27,6 +36,15 @@ func createUser(c *fiber.Ctx) error {
 	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
 }
 
+// @Tags User
+// @Description Login user with username and password
+// @Accept json
+// @Produce json
+// @Param input body dto.LoginRequestModel true "Login Request"
+// @Success 200 {object} dto.LoginResponseModel
+// @Failure 400 {object} utils.ErrorResponseModel "invalid input"
+// @Failure 500 {object} utils.ErrorResponseModel "internal server error"
+// @Router /v1/user/login [post]
 func login(c *fiber.Ctx) error {
 	reqModel := &dto.LoginRequestModel{}
 	resModel := &dto.LoginResponseModel{}
@@ -45,6 +63,15 @@ func login(c *fiber.Ctx) error {
 	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
 }
 
+// @Tags User
+// @Description Fetch profile information
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} dto.LoginResponseModel
+// @Failure 400 {object} utils.ErrorResponseModel "invalid input"
+// @Failure 401 {object} utils.ErrorResponseModel "unauthorized"
+// @Failure 500 {object} utils.ErrorResponseModel "internal server error"
+// @Router /v1/user/profile [get]
 func getProfile(c *fiber.Ctx) error {
 	data := auth.DecodeToken(c)
 	resModel := &dto.GetProfileResponseModel{}

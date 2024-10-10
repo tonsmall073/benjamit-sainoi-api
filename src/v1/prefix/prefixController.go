@@ -8,6 +8,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// @Tags Prefix
+// @Description Fetch all prefixes
+// @Produce json
+// @Success 200 {object} dto.GetAllPrefixResponseModel
+// @Failure 400 {object} utils.ErrorResponseModel "invalid input"
+// @Failure 500 {object} utils.ErrorResponseModel "internal server error"
+// @Router /v1/prefix/getAll [get]
 func getAllPrefix(c *fiber.Ctx) error {
 	context, contextErr := db.Connect()
 	if contextErr != nil {
