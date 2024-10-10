@@ -11,7 +11,7 @@ import (
 // @Tags Prefix
 // @Description Fetch all prefixes
 // @Produce json
-// @Success 200 {object} dto.GetAllPrefixResponseModel
+// @Success 200 {object} dto.GetAllPrefixResponseModel "ok"
 // @Failure 400 {object} utils.ErrorResponseModel "invalid input"
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/prefix/getAll [get]

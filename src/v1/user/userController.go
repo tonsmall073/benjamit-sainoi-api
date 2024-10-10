@@ -13,8 +13,8 @@ import (
 // @Description Create a user by filling in user information.
 // @Accept json
 // @Produce json
-// @Param input body dto.CreateUserRequestModel true "Login Request"
-// @Success 201 {object} dto.CreateUserResponseModel
+// @Param input body dto.CreateUserRequestModel true "create user request"
+// @Success 201 {object} dto.CreateUserResponseModel "created"
 // @Failure 400 {object} utils.ErrorResponseModel "invalid input"
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/user/create [post]
@@ -40,8 +40,8 @@ func createUser(c *fiber.Ctx) error {
 // @Description Login user with username and password
 // @Accept json
 // @Produce json
-// @Param input body dto.LoginRequestModel true "Login Request"
-// @Success 200 {object} dto.LoginResponseModel
+// @Param input body dto.LoginRequestModel true "login request"
+// @Success 200 {object} dto.LoginResponseModel "ok"
 // @Failure 400 {object} utils.ErrorResponseModel "invalid input"
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/user/login [post]
@@ -67,7 +67,7 @@ func login(c *fiber.Ctx) error {
 // @Description Fetch profile information
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} dto.LoginResponseModel
+// @Success 200 {object} dto.LoginResponseModel "ok"
 // @Failure 400 {object} utils.ErrorResponseModel "invalid input"
 // @Failure 401 {object} utils.ErrorResponseModel "unauthorized"
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
