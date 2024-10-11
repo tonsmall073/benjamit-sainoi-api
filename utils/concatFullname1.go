@@ -2,7 +2,8 @@ package utils
 
 import "strings"
 
-func ConcatFullName(prefixName, firstname, lastname, nickname string) string {
+//Example return นายวิศรุต รูปเขีบน (ต้น)
+func ConcatFullname(prefixName, firstname, lastname, nickname string) string {
 	var parts []string
 
 	if prefixName != "" && firstname != "" {

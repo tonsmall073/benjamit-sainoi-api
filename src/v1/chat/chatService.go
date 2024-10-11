@@ -97,7 +97,7 @@ func (s ChatService) mapSendResponseModel(
 		Message:     chatData.Message,
 		MessageType: chatData.MessageType,
 		ChannelName: chatData.ChannelName,
-		Fullname: utils.ConcatFullName(
+		Fullname: utils.ConcatFullname(
 			userData.Prefix.Name,
 			userData.Firstname,
 			userData.Lastname,
