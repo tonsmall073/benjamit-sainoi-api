@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -77,20 +78,24 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 		origin := c.Get("Origin")
 		c.Set("Access-Control-Allow-Origin", origin)
 
-		responseLog := model.ApiTransactionLog{
-			Path:         c.Path(),
-			Method:       c.Method(),
-			ContentType:  c.Get("Content-Type"),
-			StatusCode:   c.Response().StatusCode(),
-			ResponseBody: string(c.Response().Body()),
-			RequestBody:  requestBody,
-			Headers:      string(headersJson),
-			Origin:       origin,
-		}
-		if err := db.Create(&responseLog).Error; err != nil {
-			log.Printf("[ERROR] failed to log error: %v\n", err)
+		if strings.Contains(c.Path(), "events") {
+			log.Printf("[INFO] SSE request for path: %s\n", c.Path())
 		} else {
-			log.Printf("[INFO] Logging request for path: %s\n", c.Path())
+			responseLog := model.ApiTransactionLog{
+				Path:         c.Path(),
+				Method:       c.Method(),
+				ContentType:  c.Get("Content-Type"),
+				StatusCode:   c.Response().StatusCode(),
+				ResponseBody: string(c.Response().Body()),
+				RequestBody:  requestBody,
+				Headers:      string(headersJson),
+				Origin:       origin,
+			}
+			if err := db.Create(&responseLog).Error; err != nil {
+				log.Printf("[ERROR] failed to log error: %v\n", err)
+			} else {
+				log.Printf("[INFO] Logging request for path: %s\n", c.Path())
+			}
 		}
 
 		return err

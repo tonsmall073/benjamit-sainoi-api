@@ -7,12 +7,13 @@ import (
 	"bjm/src/v1/user"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jsorb84/ssefiber"
 )
 
-func UseRoute(app fiber.Router) {
+func UseRoute(app fiber.Router, sse *ssefiber.FiberSSEApp) {
 	route := app.Group("/v1")
 	prefix.Setup(route)
 	user.Setup(route)
 	product.Setup(route)
-	chat.Setup(route)
+	chat.Setup(route, sse)
 }

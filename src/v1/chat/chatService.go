@@ -4,8 +4,12 @@ import (
 	"bjm/db/benjamit/models"
 	"bjm/src/v1/chat/dto"
 	"bjm/utils"
+	"encoding/json"
 	"errors"
+	"log"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/jsorb84/ssefiber"
 	"gorm.io/gorm"
 )
 
@@ -17,6 +21,7 @@ func (s ChatService) Send(
 	reqModel *dto.SendRequestModel,
 	resModel *dto.SendResponseModel,
 	uuid string,
+	sse *ssefiber.FiberSSEApp,
 ) *dto.SendResponseModel {
 	var userData models.User
 	var userDataErr error
@@ -42,7 +47,27 @@ func (s ChatService) Send(
 	s.mapSendResponseModel(insert, userData, resModel)
 	resModel.MessageDesc = utils.HttpStatusCodes[201]
 	resModel.StatusCode = 201
+
+	resMarshal, resMarshalErr := json.Marshal(resModel)
+	if resMarshalErr == nil {
+		channel := sse.GetChannel("/chat/" + resModel.Data.ChannelName)
+		if channel != nil {
+			channel.SendEvent("message", string(resMarshal))
+		}
+	}
+
 	return resModel
+}
+
+func (s ChatService) EventChat(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
+	channelName := c.Params("channelName")
+
+	channel := sse.GetChannel(channelName)
+	if channel == nil {
+		channel = sse.CreateChannel("/chat/"+channelName, "/chat/"+channelName)
+		log.Println("Created chat channel: " + channelName + "\n")
+	}
+	return channel.ServeHTTP(c)
 }
 
 func (s ChatService) insertChat(data models.Chat) (models.Chat, error) {

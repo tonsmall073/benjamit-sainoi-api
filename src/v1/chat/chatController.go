@@ -9,6 +9,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	auth "bjm/auth/jwt"
+
+	"github.com/jsorb84/ssefiber"
 )
 
 // @Tags Chat
@@ -22,7 +24,7 @@ import (
 // @Failure 401 {object} utils.ErrorResponseModel "unauthorized"
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/chat/user/send [post]
-func send(c *fiber.Ctx) error {
+func send(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	reqModel := &dto.SendRequestModel{}
 	resModel := &dto.SendResponseModel{}
 	getUuid := auth.DecodeToken(c)["uuid"].(string)
@@ -37,13 +39,13 @@ func send(c *fiber.Ctx) error {
 	defer db.ConnectClose(context)
 
 	service := &ChatService{context}
-	serviceRes := service.Send(reqModel, resModel, getUuid)
+	serviceRes := service.Send(reqModel, resModel, getUuid, sse)
 
 	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
 }
 
 // @Tags Chat
-// @Description Send a message
+// @Description Send a message (guest)
 // @Accept json
 // @Produce json
 // @Param input body dto.SendRequestModel true "send request"
@@ -51,7 +53,7 @@ func send(c *fiber.Ctx) error {
 // @Failure 400 {object} utils.ErrorResponseModel "invalid input"
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/chat/send [post]
-func sendForGuest(c *fiber.Ctx) error {
+func sendForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	reqModel := &dto.SendRequestModel{}
 	resModel := &dto.SendResponseModel{}
 	err := c.BodyParser(reqModel)
@@ -65,16 +67,18 @@ func sendForGuest(c *fiber.Ctx) error {
 	defer db.ConnectClose(context)
 
 	service := &ChatService{context}
-	serviceRes := service.Send(reqModel, resModel, "")
+	serviceRes := service.Send(reqModel, resModel, "", sse)
 
 	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
 }
 
 // @Tags Chat
-// @Description Event message
-// @Produce json
+// @Description Event chat message
+// @Param channelName path string true "Channel Name"
 // @Success 201 {object} dto.SendResponseModel "created"
-// @Router /v1/chat/events/:channelName [get]
-func eventChat(c *fiber.Ctx) error {
-	return nil
+// @Router /v1/chat/events/{channelName} [get]
+func eventChat(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
+	service := &ChatService{}
+	serviceRes := service.EventChat(c, sse)
+	return serviceRes
 }

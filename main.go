@@ -16,6 +16,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"github.com/jsorb84/ssefiber"
 
 	_ "bjm/docs"
 	"bjm/middlewares"
@@ -62,9 +63,9 @@ func startServerApi() {
 	middlewares.UseTimeZone(app)
 	middlewares.UseFiberCors(app)
 	middlewares.UseSwagger(app)
-
+	sse := ssefiber.New(app, "")
 	route := middlewares.UseApiTransactionLog(app)
-	v1.UseRoute(route)
+	v1.UseRoute(route, sse)
 	v2.UseRoute(route)
 
 	app.Listen(":" + os.Getenv("SERVER_POST"))
