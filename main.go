@@ -61,9 +61,9 @@ func startServerApi() {
 	app := fiber.New()
 	middlewares.UseTimeZone(app)
 	middlewares.UseFiberCors(app)
-	route := middlewares.UseApiTransactionLog(app)
-
 	middlewares.UseSwagger(app)
+
+	route := middlewares.UseApiTransactionLog(app)
 	v1.UseRoute(route)
 	v2.UseRoute(route)
 

@@ -10,6 +10,10 @@ import (
 )
 
 func Seeder() {
+	seederBenjamitDatabase()
+}
+
+func seederBenjamitDatabase() {
 	db, err := benjamit.Connect()
 	if err != nil {
 		log.Fatal(err.Error())
@@ -19,6 +23,7 @@ func Seeder() {
 		seeds.Prefix(),
 		seeds.User(),
 		// seeds.ApiTransactionLog(),
+		// seeds.Chat(),
 	}
 	insertData(db, data)
 }

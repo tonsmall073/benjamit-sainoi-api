@@ -10,6 +10,10 @@ import (
 )
 
 func Migrate() {
+	migrateBenjamitDatabase()
+}
+
+func migrateBenjamitDatabase() {
 	db, _ := benjamit.Connect()
 	if err := createUUIDExtension(db); err != nil {
 		log.Printf("[ERROR] failed to create uuid-ossp extension: %v\n", err)
@@ -24,6 +28,7 @@ func Migrate() {
 		&models.Prefix{},
 		&models.User{},
 		&models.ApiTransactionLog{},
+		&models.Chat{},
 	)
 
 	if err != nil {

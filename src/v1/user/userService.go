@@ -90,7 +90,7 @@ func (s UserService) Login(
 		resModel.StatusCode = 400
 		return resModel
 	}
-	getToken, getTokenErr := auth.CreateToken(data.Username, data.UUID.String(), "user")
+	getToken, getTokenErr := auth.CreateToken(data.Username, data.UUID.String(), string(data.Role))
 	if getTokenErr != nil {
 		resModel.MessageDesc = getTokenErr.Error()
 		resModel.StatusCode = 500

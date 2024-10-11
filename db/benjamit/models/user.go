@@ -7,6 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type RoleEnum string
+
+const (
+	USER  RoleEnum = "USER"
+	ADMIN RoleEnum = "ADMIN"
+)
+
 type User struct {
 	gorm.Model
 	UUID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"uuid"`
@@ -22,4 +29,5 @@ type User struct {
 	LineId        string    `gorm:"default:null"`
 	MobilePhoneNo string    `gorm:"default:null"`
 	HomePhoneNo   string    `gorm:"default:null"`
+	Role          RoleEnum  `gorm:"not null;default:'USER'"`
 }
