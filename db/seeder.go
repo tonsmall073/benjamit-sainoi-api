@@ -24,6 +24,7 @@ func seederBenjamitDatabase() {
 		seeds.User(),
 		// seeds.ApiTransactionLog(),
 		// seeds.Chat(),
+		// seeds.Notification(),
 	}
 	insertData(db, data)
 }

@@ -21,4 +21,6 @@ type Chat struct {
 	UserId      int             `gorm:"null;default:null"`
 	User        User            `gorm:"foreignKey:UserId" json:"user"`
 	ChannelName string          `gorm:"not null"`
+	ReadStatus  bool            `gorm:"default:false"`
+	ClientId    string          `gorm:"null"`
 }

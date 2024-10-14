@@ -29,6 +29,7 @@ func migrateBenjamitDatabase() {
 		&models.User{},
 		&models.ApiTransactionLog{},
 		&models.Chat{},
+		&models.Notification{},
 	)
 
 	if err != nil {

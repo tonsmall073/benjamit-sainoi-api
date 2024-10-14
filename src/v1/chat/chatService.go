@@ -68,6 +68,7 @@ func (s ChatService) sendForGuest(
 		Message:     reqModel.Message,
 		MessageType: reqModel.MessageType,
 		ChannelName: "guest",
+		ClientId:    reqModel.ClientId,
 	}
 
 	insert, insertErr := s.insertChat(insertData)
@@ -77,7 +78,7 @@ func (s ChatService) sendForGuest(
 		return resModel
 	}
 
-	s.mapSendForGuestResponseModel(insert, resModel)
+	s.mapSendForGuestResponseModel(insert, reqModel, resModel)
 	resModel.MessageDesc = utils.HttpStatusCodes[201]
 	resModel.StatusCode = 201
 
@@ -170,13 +171,16 @@ func (s ChatService) mapSendResponseModel(
 			userData.Lastname,
 			"",
 		),
-		Nickname:  userData.Nickname,
-		CreatedAt: chatData.CreatedAt,
+		Nickname:   userData.Nickname,
+		CreatedAt:  chatData.CreatedAt,
+		Uuid:       userData.UUID.String(),
+		ReadStatus: chatData.ReadStatus,
 	}
 }
 
 func (s ChatService) mapSendForGuestResponseModel(
 	chatData models.Chat,
+	reqModel *dto.SendForGuestRequestModel,
 	resModel *dto.SendForGuestResponseModel,
 
 ) {
@@ -185,5 +189,9 @@ func (s ChatService) mapSendForGuestResponseModel(
 		MessageType: chatData.MessageType,
 		ChannelName: "guest",
 		CreatedAt:   chatData.CreatedAt,
+		ClientId:    reqModel.ClientId,
+		Fullname:    reqModel.Fullname,
+		Nickname:    reqModel.Nickname,
+		ReadStatus:  chatData.ReadStatus,
 	}
 }

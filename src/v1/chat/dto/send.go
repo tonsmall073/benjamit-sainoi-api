@@ -18,10 +18,12 @@ type SendResponseModel struct {
 }
 
 type SendDataListResponseModel struct {
+	Uuid        string                 `json:"uuid"`
 	Message     string                 `json:"message"`
 	MessageType models.MessageTypeEnum `json:"messageType"`
 	ChannelName string                 `json:"channelName"`
 	Fullname    string                 `json:"fullname"`
 	Nickname    string                 `json:"nickname"`
 	CreatedAt   time.Time              `json:"createdAt"`
+	ReadStatus  bool                   `json:"readStatus"`
 }
