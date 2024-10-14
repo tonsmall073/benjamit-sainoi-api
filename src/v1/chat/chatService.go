@@ -50,6 +50,39 @@ func (s ChatService) Send(
 
 	resMarshal, resMarshalErr := json.Marshal(resModel)
 	if resMarshalErr == nil {
+		channel := sse.GetChannel("/chat/user/" + resModel.Data.ChannelName)
+		if channel != nil {
+			channel.SendEvent("message", string(resMarshal))
+		}
+	}
+
+	return resModel
+}
+
+func (s ChatService) sendForGuest(
+	reqModel *dto.SendForGuestRequestModel,
+	resModel *dto.SendForGuestResponseModel,
+	sse *ssefiber.FiberSSEApp,
+) *dto.SendForGuestResponseModel {
+	insertData := models.Chat{
+		Message:     reqModel.Message,
+		MessageType: reqModel.MessageType,
+		ChannelName: "guest",
+	}
+
+	insert, insertErr := s.insertChat(insertData)
+	if insertErr != nil {
+		resModel.MessageDesc = insertErr.Error()
+		resModel.StatusCode = 500
+		return resModel
+	}
+
+	s.mapSendForGuestResponseModel(insert, resModel)
+	resModel.MessageDesc = utils.HttpStatusCodes[201]
+	resModel.StatusCode = 201
+
+	resMarshal, resMarshalErr := json.Marshal(resModel)
+	if resMarshalErr == nil {
 		channel := sse.GetChannel("/chat/" + resModel.Data.ChannelName)
 		if channel != nil {
 			channel.SendEvent("message", string(resMarshal))
@@ -64,8 +97,17 @@ func (s ChatService) EventChat(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 
 	channel := sse.GetChannel(channelName)
 	if channel == nil {
-		channel = sse.CreateChannel("/chat/"+channelName, "/chat/"+channelName)
-		log.Println("Created chat channel: " + channelName + "\n")
+		channel = sse.CreateChannel("/chat/user/"+channelName, "/chat/user/"+channelName)
+		log.Println("Created chat channel: " + channelName)
+	}
+	return channel.ServeHTTP(c)
+}
+
+func (s ChatService) EventChatForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
+	channel := sse.GetChannel("guest")
+	if channel == nil {
+		channel = sse.CreateChannel("/chat/guest", "/chat/guest")
+		log.Println("Created chat channel: guest")
 	}
 	return channel.ServeHTTP(c)
 }
@@ -130,5 +172,18 @@ func (s ChatService) mapSendResponseModel(
 		),
 		Nickname:  userData.Nickname,
 		CreatedAt: chatData.CreatedAt,
+	}
+}
+
+func (s ChatService) mapSendForGuestResponseModel(
+	chatData models.Chat,
+	resModel *dto.SendForGuestResponseModel,
+
+) {
+	resModel.Data = &dto.SendForGuestDataListResponseModel{
+		Message:     chatData.Message,
+		MessageType: chatData.MessageType,
+		ChannelName: "guest",
+		CreatedAt:   chatData.CreatedAt,
 	}
 }

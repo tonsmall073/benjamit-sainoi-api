@@ -14,7 +14,7 @@ import (
 )
 
 // @Tags Chat
-// @Description Send a message
+// @Description Send a message for guest
 // @Accept json
 // @Produce json
 // @Security BearerAuth
@@ -48,14 +48,14 @@ func send(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 // @Description Send a message (guest)
 // @Accept json
 // @Produce json
-// @Param input body dto.SendRequestModel true "send request"
-// @Success 201 {object} dto.SendResponseModel "created"
+// @Param input body dto.SendForGuestRequestModel true "send request"
+// @Success 201 {object} dto.SendForGuestResponseModel "created"
 // @Failure 400 {object} utils.ErrorResponseModel "invalid input"
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/chat/send [post]
 func sendForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
-	reqModel := &dto.SendRequestModel{}
-	resModel := &dto.SendResponseModel{}
+	reqModel := &dto.SendForGuestRequestModel{}
+	resModel := &dto.SendForGuestResponseModel{}
 	err := c.BodyParser(reqModel)
 	if err != nil {
 		return utils.FiberResponseErrorJson(c, err.Error(), 400)
@@ -67,7 +67,7 @@ func sendForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	defer db.ConnectClose(context)
 
 	service := &ChatService{context}
-	serviceRes := service.Send(reqModel, resModel, "", sse)
+	serviceRes := service.sendForGuest(reqModel, resModel, sse)
 
 	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
 }
@@ -76,9 +76,20 @@ func sendForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 // @Description Event chat message
 // @Param channelName path string true "Channel Name"
 // @Success 201 {object} dto.SendResponseModel "created"
-// @Router /v1/chat/events/{channelName} [get]
+// @Router /v1/chat/user/events/{channelName} [get]
 func eventChat(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	service := &ChatService{}
 	serviceRes := service.EventChat(c, sse)
+	return serviceRes
+}
+
+// @Tags Chat
+// @Description Event chat message for guest
+// @Param channelName path string true "Channel Name"
+// @Success 201 {object} dto.SendForGuestResponseModel "created"
+// @Router /v1/chat/events/guest [get]
+func eventChatGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
+	service := &ChatService{}
+	serviceRes := service.EventChatForGuest(c, sse)
 	return serviceRes
 }
