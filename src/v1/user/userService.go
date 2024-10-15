@@ -184,6 +184,7 @@ func (s UserService) mapLoginResponseModel(
 ) {
 	data := &dto.LoginDataListResponseModel{
 		AccessToken: token,
+		Uuid:        userData.UUID.String(),
 		Username:    userData.Username,
 		PrefixName:  userData.Prefix.Name,
 		Nickname:    userData.Nickname,
@@ -199,6 +200,7 @@ func (s UserService) mapGetProfileResponseModel(
 	resModel *dto.GetProfileResponseModel,
 ) {
 	data := &dto.GetProfileDataListResponseModel{
+		Uuid:          userData.UUID.String(),
 		PrefixName:    userData.Prefix.Name,
 		Firstname:     userData.Firstname,
 		Lastname:      userData.Lastname,

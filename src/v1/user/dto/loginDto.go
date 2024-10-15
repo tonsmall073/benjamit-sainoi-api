@@ -14,6 +14,7 @@ type LoginResponseModel struct {
 }
 
 type LoginDataListResponseModel struct {
+	Uuid        string    `json:"uuid"`
 	AccessToken string    `json:"accessToken"`
 	Username    string    `json:"username"`
 	Nickname    string    `json:"nickname"`

@@ -9,6 +9,7 @@ type GetProfileResponseModel struct {
 }
 
 type GetProfileDataListResponseModel struct {
+	Uuid          string    `json:"uuid"`
 	PrefixName    string    `json:"prefixName"`
 	Firstname     string    `json:"firstname"`
 	Lastname      string    `json:"lastname"`
