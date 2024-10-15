@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -19,6 +19,12 @@ import (
 var (
 	cleanupOnce sync.Once
 )
+
+func isValidSSEPath(path string) bool {
+	// ใช้ regex เพื่อให้ "events" เป็น path ที่ถูกต้อง
+	re := regexp.MustCompile(`^(\/.*\/)?events(\/.*)?(\?.*)?$`)
+	return re.MatchString(path)
+}
 
 func deleteOldLogs(db *gorm.DB) {
 	getEnv := os.Getenv("LOG_CLEANING_DAY")
@@ -78,7 +84,7 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 		origin := c.Get("Origin")
 		c.Set("Access-Control-Allow-Origin", origin)
 
-		if strings.Contains(c.Path(), "/events") || strings.Contains(c.Path(), "events/") {
+		if isValidSSEPath(c.Path()) {
 			log.Printf("[INFO] SSE request for path: %s\n", c.Path())
 		} else {
 			responseLog := model.ApiTransactionLog{
