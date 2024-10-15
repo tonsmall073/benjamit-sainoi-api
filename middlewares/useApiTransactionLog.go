@@ -78,7 +78,7 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 		origin := c.Get("Origin")
 		c.Set("Access-Control-Allow-Origin", origin)
 
-		if strings.Contains(c.Path(), "events") {
+		if strings.Contains(c.Path(), "/events") || strings.Contains(c.Path(), "events/") {
 			log.Printf("[INFO] SSE request for path: %s\n", c.Path())
 		} else {
 			responseLog := model.ApiTransactionLog{
