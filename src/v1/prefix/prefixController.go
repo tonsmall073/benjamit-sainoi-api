@@ -4,6 +4,7 @@ import (
 	db "bjm/db/benjamit"
 	"bjm/src/v1/prefix/dto"
 	"bjm/utils"
+	"sync"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -16,14 +17,37 @@ import (
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/prefix/getAll [get]
 func getAllPrefix(c *fiber.Ctx) error {
-	context, contextErr := db.Connect()
-	if contextErr != nil {
-		return utils.FiberResponseErrorJson(c, contextErr.Error(), 500)
-	}
-	defer db.ConnectClose(context)
+	resultChan := make(chan utils.GenericResult[*dto.GetAllPrefixResponseModel])
+	errorChan := make(chan utils.GenericError)
 
-	resModel := &dto.GetAllPrefixResponseModel{}
-	service := &PrefixService{context}
-	serviceRes := service.GetAllPrefix(resModel)
-	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		context, contextErr := db.Connect()
+		if contextErr != nil {
+			errorChan <- utils.GenericError{Error: contextErr, StatusCode: 500}
+			return
+		}
+		defer db.ConnectClose(context)
+
+		resModel := &dto.GetAllPrefixResponseModel{}
+		service := &PrefixService{context}
+		serviceRes := service.GetAllPrefix(resModel)
+		resultChan <- utils.GenericResult[*dto.GetAllPrefixResponseModel]{ResModel: serviceRes}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+		close(errorChan)
+	}()
+
+	select {
+	case err := <-errorChan:
+		return utils.FiberResponseErrorJson(c, err.Error.Error(), err.StatusCode)
+	case result := <-resultChan:
+		return utils.FiberResponseJson(c, result.ResModel, result.ResModel.StatusCode)
+	}
 }

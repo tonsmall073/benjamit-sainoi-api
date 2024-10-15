@@ -3,6 +3,7 @@ package chat
 import (
 	"bjm/src/v1/chat/dto"
 	"bjm/utils"
+	"sync"
 
 	db "bjm/db/benjamit"
 
@@ -25,23 +26,47 @@ import (
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/chat/user/send [post]
 func send(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
-	reqModel := &dto.SendRequestModel{}
-	resModel := &dto.SendResponseModel{}
-	getUuid := auth.DecodeToken(c)["uuid"].(string)
-	err := c.BodyParser(reqModel)
-	if err != nil {
-		return utils.FiberResponseErrorJson(c, err.Error(), 400)
-	}
-	context, contextErr := db.Connect()
-	if contextErr != nil {
-		return utils.FiberResponseErrorJson(c, contextErr.Error(), 500)
-	}
-	defer db.ConnectClose(context)
+	resultChan := make(chan utils.GenericResult[*dto.SendResponseModel])
+	errorChan := make(chan utils.GenericError)
 
-	service := &ChatService{context}
-	serviceRes := service.Send(reqModel, resModel, getUuid, sse)
+	var wg sync.WaitGroup
 
-	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		reqModel := &dto.SendRequestModel{}
+		err := c.BodyParser(reqModel)
+		if err != nil {
+			errorChan <- utils.GenericError{Error: err, StatusCode: 400}
+			return
+		}
+		context, contextErr := db.Connect()
+		if contextErr != nil {
+			errorChan <- utils.GenericError{Error: contextErr, StatusCode: 500}
+			return
+		}
+		defer db.ConnectClose(context)
+
+		getUuid := auth.DecodeToken(c)["uuid"].(string)
+
+		resModel := &dto.SendResponseModel{}
+		service := &ChatService{context}
+		serviceRes := service.Send(reqModel, resModel, getUuid, sse)
+		resultChan <- utils.GenericResult[*dto.SendResponseModel]{ResModel: serviceRes}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+		close(errorChan)
+	}()
+
+	select {
+	case err := <-errorChan:
+		return utils.FiberResponseErrorJson(c, err.Error.Error(), err.StatusCode)
+	case result := <-resultChan:
+		return utils.FiberResponseJson(c, result.ResModel, result.ResModel.StatusCode)
+	}
 }
 
 // @Tags Chat
@@ -54,22 +79,45 @@ func send(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/chat/send [post]
 func sendForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
-	reqModel := &dto.SendForGuestRequestModel{}
-	resModel := &dto.SendForGuestResponseModel{}
-	err := c.BodyParser(reqModel)
-	if err != nil {
-		return utils.FiberResponseErrorJson(c, err.Error(), 400)
-	}
-	context, contextErr := db.Connect()
-	if contextErr != nil {
-		return utils.FiberResponseErrorJson(c, contextErr.Error(), 500)
-	}
-	defer db.ConnectClose(context)
+	resultChan := make(chan utils.GenericResult[*dto.SendForGuestResponseModel])
+	errorChan := make(chan utils.GenericError)
 
-	service := &ChatService{context}
-	serviceRes := service.sendForGuest(reqModel, resModel, sse)
+	var wg sync.WaitGroup
 
-	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		reqModel := &dto.SendForGuestRequestModel{}
+		err := c.BodyParser(reqModel)
+		if err != nil {
+			errorChan <- utils.GenericError{Error: err, StatusCode: 400}
+			return
+		}
+		context, contextErr := db.Connect()
+		if contextErr != nil {
+			errorChan <- utils.GenericError{Error: contextErr, StatusCode: 500}
+			return
+		}
+		defer db.ConnectClose(context)
+
+		resModel := &dto.SendForGuestResponseModel{}
+		service := &ChatService{context}
+		serviceRes := service.sendForGuest(reqModel, resModel, sse)
+		resultChan <- utils.GenericResult[*dto.SendForGuestResponseModel]{ResModel: serviceRes}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+		close(errorChan)
+	}()
+
+	select {
+	case err := <-errorChan:
+		return utils.FiberResponseErrorJson(c, err.Error.Error(), err.StatusCode)
+	case result := <-resultChan:
+		return utils.FiberResponseJson(c, result.ResModel, result.ResModel.StatusCode)
+	}
 }
 
 // @Tags Chat

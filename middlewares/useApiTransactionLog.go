@@ -39,7 +39,7 @@ func deleteOldLogs(db *gorm.DB) {
 	if err := db.Where("created_at < ?", thirtyDaysAgo).Delete(&model.ApiTransactionLog{}).Error; err != nil {
 		log.Printf("[ERROR] failed to delete old logs: %v\n", err)
 	} else {
-		log.Printf("[INFO] Deleted logs older than %d days\n", day)
+		log.Printf("[INFO] deleted logs older than %d days\n", day)
 	}
 }
 
@@ -56,7 +56,7 @@ func logCleanupTask(db *gorm.DB) {
 		}
 
 		if pingErr := sqlDB.Ping(); pingErr != nil {
-			log.Printf("[WARN] Database connection lost: %v. Retrying...\n", pingErr)
+			log.Printf("[WARN] database connection lost: %v. Retrying...\n", pingErr)
 			continue
 		}
 		deleteOldLogs(db)
@@ -67,43 +67,66 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		err := c.Next()
 
-		var requestBody string
-		bodyBytes := c.Body()
-		requestBody = string(bodyBytes)
-		rawHeaders := c.GetReqHeaders()
-		headers := make(map[string]string)
-		for key, values := range rawHeaders {
-			if len(values) > 0 {
-				headers[key] = values[0]
-			}
-		}
-		headersJson, headersJsonErr := json.Marshal(headers)
-		if headersJsonErr != nil {
-			log.Printf("[ERROR] failed to marshal headers: %v\n", headersJsonErr)
-		}
-		origin := c.Get("Origin")
-		c.Set("Access-Control-Allow-Origin", origin)
-
 		if isValidSSEPath(c.Path()) {
-			log.Printf("[INFO] SSE request for path: %s\n", c.Path())
+			log.Printf("[INFO] sse request for path: %s\n", c.Path())
 		} else {
-			responseLog := model.ApiTransactionLog{
-				Path:         c.Path(),
-				Method:       c.Method(),
-				ContentType:  c.Get("Content-Type"),
-				StatusCode:   c.Response().StatusCode(),
-				ResponseBody: string(c.Response().Body()),
-				RequestBody:  requestBody,
-				Headers:      string(headersJson),
-				Origin:       origin,
-			}
-			if err := db.Create(&responseLog).Error; err != nil {
-				log.Printf("[ERROR] failed to log error: %v\n", err)
-			} else {
-				log.Printf("[INFO] Logging request for path: %s\n", c.Path())
+			var wg sync.WaitGroup
+			wg.Add(1)
+			logChan := make(chan error)
+
+			go func() {
+				defer wg.Done()
+
+				origin := c.Get("Origin")
+				c.Set("Access-Control-Allow-Origin", origin)
+
+				var requestBody string
+				bodyBytes := c.Body()
+				requestBody = string(bodyBytes)
+				rawHeaders := c.GetReqHeaders()
+				headers := make(map[string]string)
+				for key, values := range rawHeaders {
+					if len(values) > 0 {
+						headers[key] = values[0]
+					}
+				}
+
+				headersJson, headersJsonErr := json.Marshal(headers)
+				if headersJsonErr != nil {
+					logChan <- headersJsonErr
+				}
+
+				responseLog := model.ApiTransactionLog{
+					Path:         c.Path(),
+					Method:       c.Method(),
+					ContentType:  c.Get("Content-Type"),
+					StatusCode:   c.Response().StatusCode(),
+					ResponseBody: string(c.Response().Body()),
+					RequestBody:  requestBody,
+					Headers:      string(headersJson),
+					Origin:       origin,
+				}
+
+				if err := db.Create(&responseLog).Error; err != nil {
+					logChan <- err
+				} else {
+					logChan <- nil
+				}
+			}()
+
+			go func() {
+				wg.Wait()
+				close(logChan)
+			}()
+
+			for logErr := range logChan {
+				if logErr != nil {
+					log.Printf("[ERROR] error in logging: %v\n", logErr)
+				} else {
+					log.Printf("[INFO] logging request for path: %s\n", c.Path())
+				}
 			}
 		}
-
 		return err
 	}
 }
