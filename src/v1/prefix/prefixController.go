@@ -17,8 +17,8 @@ import (
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/prefix/getAll [get]
 func getAllPrefix(c *fiber.Ctx) error {
-	resultChan := make(chan utils.GenericResult[*dto.GetAllPrefixResponseModel])
-	errorChan := make(chan utils.GenericError)
+	resultChan := make(chan *dto.GetAllPrefixResponseModel)
+	errorChan := make(chan utils.ErrorResponseModel)
 
 	var wg sync.WaitGroup
 
@@ -27,7 +27,10 @@ func getAllPrefix(c *fiber.Ctx) error {
 		defer wg.Done()
 		context, contextErr := db.Connect()
 		if contextErr != nil {
-			errorChan <- utils.GenericError{Error: contextErr, StatusCode: 500}
+			errorChan <- utils.ErrorResponseModel{
+				MessageDesc: contextErr.Error(),
+				StatusCode:  500,
+			}
 			return
 		}
 		defer db.ConnectClose(context)
@@ -35,7 +38,7 @@ func getAllPrefix(c *fiber.Ctx) error {
 		resModel := &dto.GetAllPrefixResponseModel{}
 		service := &PrefixService{context}
 		serviceRes := service.GetAllPrefix(resModel)
-		resultChan <- utils.GenericResult[*dto.GetAllPrefixResponseModel]{ResModel: serviceRes}
+		resultChan <- serviceRes
 	}()
 
 	go func() {
@@ -46,8 +49,8 @@ func getAllPrefix(c *fiber.Ctx) error {
 
 	select {
 	case err := <-errorChan:
-		return utils.FiberResponseErrorJson(c, err.Error.Error(), err.StatusCode)
+		return utils.FiberResponseErrorJson(c, err.MessageDesc, err.StatusCode)
 	case result := <-resultChan:
-		return utils.FiberResponseJson(c, result.ResModel, result.ResModel.StatusCode)
+		return utils.FiberResponseJson(c, result, result.StatusCode)
 	}
 }

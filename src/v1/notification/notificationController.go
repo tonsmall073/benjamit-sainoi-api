@@ -23,8 +23,8 @@ import (
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/notification/user/create [post]
 func createNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
-	resultChan := make(chan utils.GenericResult[*dto.CreateNotiResponseModel])
-	errorChan := make(chan utils.GenericError)
+	resultChan := make(chan *dto.CreateNotiResponseModel)
+	errorChan := make(chan utils.ErrorResponseModel)
 
 	var wg sync.WaitGroup
 
@@ -34,12 +34,12 @@ func createNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 		reqModel := &dto.CreateNotiRequestModel{}
 		err := c.BodyParser(reqModel)
 		if err != nil {
-			errorChan <- utils.GenericError{Error: err, StatusCode: 400}
+			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
 			return
 		}
 		context, contextErr := db.Connect()
 		if contextErr != nil {
-			errorChan <- utils.GenericError{Error: contextErr, StatusCode: 500}
+			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
 			return
 		}
 		defer db.ConnectClose(context)
@@ -49,7 +49,7 @@ func createNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 		resModel := &dto.CreateNotiResponseModel{}
 		service := &NotificationService{context}
 		serviceRes := service.CreateNoti(reqModel, resModel, getUuid, sse)
-		resultChan <- utils.GenericResult[*dto.CreateNotiResponseModel]{ResModel: serviceRes}
+		resultChan <- serviceRes
 	}()
 
 	go func() {
@@ -60,9 +60,9 @@ func createNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 
 	select {
 	case err := <-errorChan:
-		return utils.FiberResponseErrorJson(c, err.Error.Error(), err.StatusCode)
+		return utils.FiberResponseErrorJson(c, err.MessageDesc, err.StatusCode)
 	case result := <-resultChan:
-		return utils.FiberResponseJson(c, result.ResModel, result.ResModel.StatusCode)
+		return utils.FiberResponseJson(c, result, result.StatusCode)
 	}
 }
 

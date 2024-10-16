@@ -20,8 +20,8 @@ import (
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/user/create [post]
 func createUser(c *fiber.Ctx) error {
-	resultChan := make(chan utils.GenericResult[*dto.CreateUserResponseModel])
-	errorChan := make(chan utils.GenericError)
+	resultChan := make(chan *dto.CreateUserResponseModel)
+	errorChan := make(chan utils.ErrorResponseModel)
 
 	var wg sync.WaitGroup
 
@@ -31,12 +31,12 @@ func createUser(c *fiber.Ctx) error {
 		reqModel := &dto.CreateUserRequestModel{}
 		err := c.BodyParser(reqModel)
 		if err != nil {
-			errorChan <- utils.GenericError{Error: err, StatusCode: 400}
+			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
 			return
 		}
 		context, contextErr := db.Connect()
 		if contextErr != nil {
-			errorChan <- utils.GenericError{Error: contextErr, StatusCode: 500}
+			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
 			return
 		}
 		defer db.ConnectClose(context)
@@ -44,7 +44,7 @@ func createUser(c *fiber.Ctx) error {
 		resModel := &dto.CreateUserResponseModel{}
 		service := &UserService{context}
 		serviceRes := service.CreateUser(reqModel, resModel)
-		resultChan <- utils.GenericResult[*dto.CreateUserResponseModel]{ResModel: serviceRes}
+		resultChan <- serviceRes
 	}()
 
 	go func() {
@@ -55,9 +55,9 @@ func createUser(c *fiber.Ctx) error {
 
 	select {
 	case err := <-errorChan:
-		return utils.FiberResponseErrorJson(c, err.Error.Error(), err.StatusCode)
+		return utils.FiberResponseErrorJson(c, err.MessageDesc, err.StatusCode)
 	case result := <-resultChan:
-		return utils.FiberResponseJson(c, result.ResModel, result.ResModel.StatusCode)
+		return utils.FiberResponseJson(c, result, result.StatusCode)
 	}
 }
 
@@ -71,8 +71,8 @@ func createUser(c *fiber.Ctx) error {
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/user/login [post]
 func login(c *fiber.Ctx) error {
-	resultChan := make(chan utils.GenericResult[*dto.LoginResponseModel])
-	errorChan := make(chan utils.GenericError)
+	resultChan := make(chan *dto.LoginResponseModel)
+	errorChan := make(chan utils.ErrorResponseModel)
 
 	var wg sync.WaitGroup
 
@@ -82,12 +82,12 @@ func login(c *fiber.Ctx) error {
 		reqModel := &dto.LoginRequestModel{}
 		err := c.BodyParser(reqModel)
 		if err != nil {
-			errorChan <- utils.GenericError{Error: err, StatusCode: 400}
+			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
 			return
 		}
 		context, contextErr := db.Connect()
 		if contextErr != nil {
-			errorChan <- utils.GenericError{Error: contextErr, StatusCode: 500}
+			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
 			return
 		}
 		defer db.ConnectClose(context)
@@ -95,7 +95,7 @@ func login(c *fiber.Ctx) error {
 		resModel := &dto.LoginResponseModel{}
 		service := &UserService{context}
 		serviceRes := service.Login(reqModel, resModel)
-		resultChan <- utils.GenericResult[*dto.LoginResponseModel]{ResModel: serviceRes}
+		resultChan <- serviceRes
 	}()
 
 	go func() {
@@ -106,9 +106,9 @@ func login(c *fiber.Ctx) error {
 
 	select {
 	case err := <-errorChan:
-		return utils.FiberResponseErrorJson(c, err.Error.Error(), err.StatusCode)
+		return utils.FiberResponseErrorJson(c, err.MessageDesc, err.StatusCode)
 	case result := <-resultChan:
-		return utils.FiberResponseJson(c, result.ResModel, result.ResModel.StatusCode)
+		return utils.FiberResponseJson(c, result, result.StatusCode)
 	}
 }
 
@@ -122,8 +122,8 @@ func login(c *fiber.Ctx) error {
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/user/profile [get]
 func getProfile(c *fiber.Ctx) error {
-	resultChan := make(chan utils.GenericResult[*dto.GetProfileResponseModel])
-	errorChan := make(chan utils.GenericError)
+	resultChan := make(chan *dto.GetProfileResponseModel)
+	errorChan := make(chan utils.ErrorResponseModel)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -131,7 +131,7 @@ func getProfile(c *fiber.Ctx) error {
 		defer wg.Done()
 		context, contextErr := db.Connect()
 		if contextErr != nil {
-			errorChan <- utils.GenericError{Error: contextErr, StatusCode: 500}
+			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
 			return
 		}
 		defer db.ConnectClose(context)
@@ -141,7 +141,7 @@ func getProfile(c *fiber.Ctx) error {
 		resModel := &dto.GetProfileResponseModel{}
 		service := &UserService{context}
 		serviceRes := service.GetProfile(data["uuid"].(string), resModel)
-		resultChan <- utils.GenericResult[*dto.GetProfileResponseModel]{ResModel: serviceRes}
+		resultChan <- serviceRes
 	}()
 
 	go func() {
@@ -152,9 +152,9 @@ func getProfile(c *fiber.Ctx) error {
 
 	select {
 	case err := <-errorChan:
-		return utils.FiberResponseErrorJson(c, err.Error.Error(), err.StatusCode)
+		return utils.FiberResponseErrorJson(c, err.MessageDesc, err.StatusCode)
 	case result := <-resultChan:
-		return utils.FiberResponseJson(c, result.ResModel, result.ResModel.StatusCode)
+		return utils.FiberResponseJson(c, result, result.StatusCode)
 	}
 }
 
