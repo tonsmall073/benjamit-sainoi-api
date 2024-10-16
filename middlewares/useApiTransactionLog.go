@@ -70,21 +70,18 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 		if isValidSSEPath(c.Path()) {
 			log.Printf("[INFO] sse request for path: %s\n", c.Path())
 		} else {
-			var wg sync.WaitGroup
-			wg.Add(1)
-			logChan := make(chan error)
+			rawHeaders := c.GetReqHeaders()
+			headers := make(map[string]string)
+			path := c.Path()
+			method := c.Method()
+			requestBody := string(c.Body())
+			responseBody := string(c.Response().Body())
+			statusCode := c.Response().StatusCode()
+			contentType := c.Get("Content-Type")
+			origin := c.Get("Origin")
+			c.Set("Access-Control-Allow-Origin", origin)
 
 			go func() {
-				defer wg.Done()
-
-				origin := c.Get("Origin")
-				c.Set("Access-Control-Allow-Origin", origin)
-
-				var requestBody string
-				bodyBytes := c.Body()
-				requestBody = string(bodyBytes)
-				rawHeaders := c.GetReqHeaders()
-				headers := make(map[string]string)
 				for key, values := range rawHeaders {
 					if len(values) > 0 {
 						headers[key] = values[0]
@@ -93,39 +90,26 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 
 				headersJson, headersJsonErr := json.Marshal(headers)
 				if headersJsonErr != nil {
-					logChan <- headersJsonErr
+					log.Printf("[ERROR] logging json marshal error: %v\n", headersJsonErr)
 				}
 
 				responseLog := model.ApiTransactionLog{
-					Path:         c.Path(),
-					Method:       c.Method(),
-					ContentType:  c.Get("Content-Type"),
-					StatusCode:   c.Response().StatusCode(),
-					ResponseBody: string(c.Response().Body()),
+					Path:         path,
+					Method:       method,
+					ContentType:  contentType,
+					StatusCode:   statusCode,
+					ResponseBody: responseBody,
 					RequestBody:  requestBody,
 					Headers:      string(headersJson),
 					Origin:       origin,
 				}
 
 				if err := db.Create(&responseLog).Error; err != nil {
-					logChan <- err
-				} else {
-					logChan <- nil
-				}
-			}()
-
-			go func() {
-				wg.Wait()
-				close(logChan)
-			}()
-
-			for logErr := range logChan {
-				if logErr != nil {
-					log.Printf("[ERROR] error in logging: %v\n", logErr)
+					log.Printf("[ERROR] logging recording errors: %v\n", err)
 				} else {
 					log.Printf("[INFO] logging request for path: %s\n", c.Path())
 				}
-			}
+			}()
 		}
 		return err
 	}
