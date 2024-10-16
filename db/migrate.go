@@ -29,6 +29,7 @@ func migrateBenjamitDatabase() {
 	errs := createEnums(db)
 	for err := range errs {
 		log.Printf("[ERROR] failed to create enum type : %v\n", err)
+		return
 	}
 
 	err := db.AutoMigrate(
