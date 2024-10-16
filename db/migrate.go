@@ -3,8 +3,10 @@ package db
 import (
 	"bjm/db/benjamit"
 	"bjm/db/benjamit/models"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -24,6 +26,11 @@ func migrateBenjamitDatabase() {
 		return
 	}
 
+	errs := createEnums(db)
+	for err := range errs {
+		log.Printf("[ERROR] failed to create enum type : %v\n", err)
+	}
+
 	err := db.AutoMigrate(
 		&models.Prefix{},
 		&models.User{},
@@ -37,7 +44,33 @@ func migrateBenjamitDatabase() {
 		return
 	}
 
-	log.Println("The migration is complete.")
+	log.Println("[INFO] the migration is complete.")
+}
+
+func createEnums(db *gorm.DB) []error {
+	var errors []error
+
+	enumDefinitions := map[string][]string{
+		"role_enum": {
+			string(models.USER),
+			string(models.ADMIN),
+		},
+		"message_type_enum": {
+			string(models.TEXT),
+			string(models.IMAGE),
+			string(models.EMOJI),
+		},
+	}
+
+	for name, values := range enumDefinitions {
+		joinedValues := strings.Join(values, "', '")
+		query := fmt.Sprintf("CREATE TYPE %s AS ENUM ('%s');", name, joinedValues)
+		if err := db.Exec(query).Error; err != nil {
+			errors = append(errors, err)
+		}
+	}
+
+	return errors
 }
 
 func createUUIDExtension(db *gorm.DB) error {

@@ -29,5 +29,5 @@ type User struct {
 	LineId        string    `gorm:"default:null"`
 	MobilePhoneNo string    `gorm:"default:null"`
 	HomePhoneNo   string    `gorm:"default:null"`
-	Role          RoleEnum  `gorm:"not null;default:'USER'"`
+	Role          RoleEnum  `gorm:"not null;type:role_enum;default:'USER'"`
 }
