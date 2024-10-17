@@ -2,12 +2,13 @@ package jwt
 
 import (
 	"errors"
+	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 func VerifyToken(tokenString string) (jwt.MapClaims, error) {
-	secret := []byte("secret") // ควรเก็บ secret ในที่ปลอดภัย
+	secret := []byte(os.Getenv("SECRET_KEY_TOKEN_JWT"))
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

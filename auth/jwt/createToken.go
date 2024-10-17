@@ -23,7 +23,7 @@ func CreateToken(username string, uuid string, role string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	res, err := token.SignedString([]byte("secret"))
+	res, err := token.SignedString([]byte(os.Getenv("SECRET_KEY_TOKEN_JWT")))
 
 	return res, err
 }
