@@ -7,7 +7,7 @@ import (
 
 type Notification struct {
 	gorm.Model
-	UUID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"uuid"`
+	UUID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();unique" json:"uuid"`
 	Title        string    `gorm:"not null"`
 	Description  string    `gorm:"not null"`
 	UserId       int       `gorm:"null"`

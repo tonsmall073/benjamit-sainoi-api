@@ -15,7 +15,7 @@ const (
 
 type Chat struct {
 	gorm.Model
-	UUID        uuid.UUID       `gorm:"type:uuid;default:uuid_generate_v4()" json:"uuid"`
+	UUID        uuid.UUID       `gorm:"type:uuid;default:uuid_generate_v4();unique" json:"uuid"`
 	Message     string          `gorm:"not null"`
 	MessageType MessageTypeEnum `gorm:"not null;type:message_type_enum;default:'TEXT'"`
 	UserId      int             `gorm:"null;default:null"`

@@ -7,7 +7,7 @@ import (
 
 type ApiTransactionLog struct {
 	gorm.Model
-	UUID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"uuid"`
+	UUID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();unique" json:"uuid"`
 	Path         string    `gorm:"not null"`
 	Method       string    `gorm:"not null"`
 	ContentType  string

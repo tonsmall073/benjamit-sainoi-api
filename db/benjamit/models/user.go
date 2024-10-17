@@ -16,7 +16,7 @@ const (
 
 type User struct {
 	gorm.Model
-	UUID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"uuid"`
+	UUID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();unique" json:"uuid"`
 	Username      string    `gorm:"unique;not null"`
 	Password      string    `gorm:"not null"`
 	PrefixId      int       `gorm:"not null" json:"prefix_id"`

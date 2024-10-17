@@ -7,6 +7,6 @@ import (
 
 type Prefix struct {
 	gorm.Model
-	UUID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"uuid"`
+	UUID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();unique" json:"uuid"`
 	Name string    `gorm:"not null"`
 }

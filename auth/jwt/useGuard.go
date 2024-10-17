@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func UseGuard(c *fiber.Ctx) error {
+func UseUserGuard(c *fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
 
 	if authHeader == "" {
@@ -17,7 +17,6 @@ func UseGuard(c *fiber.Ctx) error {
 		})
 	}
 
-	// ตรวจสอบว่า authHeader เริ่มต้นด้วย "Bearer "
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		return c.Status(401).JSON(fiber.Map{
 			"statusCode":  401,
@@ -27,11 +26,18 @@ func UseGuard(c *fiber.Ctx) error {
 
 	token := strings.TrimPrefix(authHeader, "Bearer ")
 
-	_, err := VerifyToken(token)
+	res, err := VerifyToken(token)
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"statusCode":  401,
 			"messageDesc": utils.HttpStatusCodes[401],
+		})
+	}
+
+	if res["role"].(string) != "USER" && res["role"].(string) != "ADMIN" {
+		return c.Status(403).JSON(fiber.Map{
+			"statusCode":  403,
+			"messageDesc": utils.HttpStatusCodes[403],
 		})
 	}
 

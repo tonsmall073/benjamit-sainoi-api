@@ -38,6 +38,10 @@ func migrateBenjamitDatabase() {
 		&models.ApiTransactionLog{},
 		&models.Chat{},
 		&models.Notification{},
+		&models.Product{},
+		&models.UnitType{},
+		&models.ProductSelling{},
+		&models.IncomeAndExpense{},
 	)
 
 	if err != nil {
@@ -58,6 +62,14 @@ func createEnums(db *gorm.DB) []error {
 			string(models.TEXT),
 			string(models.IMAGE),
 			string(models.EMOJI),
+		},
+		"transaction_type_enum": {
+			string(models.DEBIT),
+			string(models.CREDIT),
+		},
+		"entry_source_enum": {
+			string(models.MANUAL),
+			string(models.SYSTEM),
 		},
 	}
 

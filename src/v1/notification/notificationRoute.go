@@ -12,6 +12,6 @@ func Setup(route fiber.Router, sse *ssefiber.FiberSSEApp) {
 
 	group.Get("/user/events/:token", func(c *fiber.Ctx) error { return eventNoti(c, sse) })
 
-	groupAuth := group.Group("/user", auth.UseGuard)
+	groupAuth := group.Group("/user", auth.UseUserGuard)
 	groupAuth.Post("/create", func(c *fiber.Ctx) error { return createNoti(c, sse) })
 }

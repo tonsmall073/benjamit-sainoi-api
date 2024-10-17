@@ -25,6 +25,10 @@ func seederBenjamitDatabase() {
 		// seeds.ApiTransactionLog(),
 		// seeds.Chat(),
 		// seeds.Notification(),
+		seeds.Product(),
+		seeds.UnitType(),
+		seeds.ProductSelling(),
+		// seeds.IncomeAndExpense(),
 	}
 	insertData(db, data)
 }
@@ -35,7 +39,7 @@ func insertData(db *gorm.DB, data []interface{}) {
 		if err := db.Create(item).Error; err != nil {
 			log.Printf("[ERROR] insert data '%s' fail error : '%s'\n", modelName, err.Error())
 		} else {
-			log.Printf("insert data '%s' success.\n", modelName)
+			log.Printf("[INFO] insert data '%s' success.\n", modelName)
 		}
 	}
 	log.Println("finished sprinkling the seeds.")
