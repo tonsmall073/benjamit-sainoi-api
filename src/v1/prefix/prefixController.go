@@ -26,6 +26,7 @@ func getAllPrefix(c *fiber.Ctx) error {
 	go func() {
 		defer wg.Done()
 		context, contextErr := db.Connect()
+		defer db.ConnectClose(context)
 		if contextErr != nil {
 			errorChan <- utils.ErrorResponseModel{
 				MessageDesc: contextErr.Error(),
@@ -33,7 +34,6 @@ func getAllPrefix(c *fiber.Ctx) error {
 			}
 			return
 		}
-		defer db.ConnectClose(context)
 
 		resModel := &dto.GetAllPrefixResponseModel{}
 		service := &PrefixService{context}

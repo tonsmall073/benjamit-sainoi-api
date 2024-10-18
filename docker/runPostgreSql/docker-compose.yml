@@ -3,7 +3,7 @@ version: '4.0'
 services:
   db:
     image: postgres:latest
-    container_name: database
+    container_name: benjamit_database
     environment:
       POSTGRES_DB: benjamit
       POSTGRES_USER: root
@@ -13,8 +13,14 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - benjamit
       
     restart: always
+
+networks:
+  benjamit:
+    external: true
 
 volumes:
   pgdata: {}

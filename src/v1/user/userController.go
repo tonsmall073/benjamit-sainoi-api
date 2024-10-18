@@ -35,11 +35,11 @@ func createUser(c *fiber.Ctx) error {
 			return
 		}
 		context, contextErr := db.Connect()
+		defer db.ConnectClose(context)
 		if contextErr != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
 			return
 		}
-		defer db.ConnectClose(context)
 
 		resModel := &dto.CreateUserResponseModel{}
 		service := &UserService{context}
@@ -86,11 +86,11 @@ func login(c *fiber.Ctx) error {
 			return
 		}
 		context, contextErr := db.Connect()
+		defer db.ConnectClose(context)
 		if contextErr != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
 			return
 		}
-		defer db.ConnectClose(context)
 
 		resModel := &dto.LoginResponseModel{}
 		service := &UserService{context}
@@ -130,11 +130,11 @@ func getProfile(c *fiber.Ctx) error {
 	go func() {
 		defer wg.Done()
 		context, contextErr := db.Connect()
+		defer db.ConnectClose(context)
 		if contextErr != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
 			return
 		}
-		defer db.ConnectClose(context)
 
 		data := auth.DecodeToken(c)
 

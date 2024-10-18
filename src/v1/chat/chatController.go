@@ -41,11 +41,11 @@ func send(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 			return
 		}
 		context, contextErr := db.Connect()
+		defer db.ConnectClose(context)
 		if contextErr != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
 			return
 		}
-		defer db.ConnectClose(context)
 
 		getUuid := auth.DecodeToken(c)["uuid"].(string)
 
@@ -94,11 +94,11 @@ func sendForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 			return
 		}
 		context, contextErr := db.Connect()
+		defer db.ConnectClose(context)
 		if contextErr != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
 			return
 		}
-		defer db.ConnectClose(context)
 
 		resModel := &dto.SendForGuestResponseModel{}
 		service := &ChatService{context}

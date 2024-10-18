@@ -2,8 +2,18 @@ version: "4.0"
 
 services:
   backend:
-    container_name: benjamitGo
+    container_name: benjamit_api
     build: .
+    image: benjamit-api:latest
+    environment:
+      - APP_MODE=development
     ports: 
       - "8000:8000"
+    networks:
+      - benjamit
+
     restart: always
+
+networks:
+  benjamit:
+    external: true

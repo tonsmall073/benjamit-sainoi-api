@@ -18,15 +18,23 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/jsorb84/ssefiber"
 
-	_ "bjm/docs"
+	_ "bjm/docs" // swagger docs
 	"bjm/middlewares"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	mode := os.Getenv("APP_MODE")
+	fmt.Println("App Mode : " + mode)
+	if mode == "production" {
+		if err := godotenv.Load("./envs/production.env"); err != nil {
+			log.Fatal("[ERROR] loading production.env file")
+		}
+	} else {
+		if err := godotenv.Load("./envs/development.env"); err != nil {
+			log.Fatal("[ERROR] loading development.env file")
+		}
 	}
+
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Do you want to Start Server API Press (S)")
 	fmt.Println("Do you want to Migrate Press (M)")
