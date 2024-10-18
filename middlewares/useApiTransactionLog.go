@@ -46,7 +46,7 @@ func deleteOldLogs() {
 				}
 			}
 			thirtyDaysAgo := time.Now().AddDate(0, 0, -day)
-			if err := db.Where("created_at < ?", thirtyDaysAgo).Delete(&model.ApiTransactionLog{}).Error; err != nil {
+			if err := db.Unscoped().Where("created_at < ?", thirtyDaysAgo).Delete(&model.ApiTransactionLog{}).Error; err != nil {
 				log.Printf("[ERROR] failed to delete old logs: %v\n", err)
 			} else {
 				log.Printf("[INFO] deleted logs older than %d days\n", day)
