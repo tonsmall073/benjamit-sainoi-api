@@ -28,13 +28,18 @@ func Connect() (*gorm.DB, error) {
 }
 
 func ConnectClose(db *gorm.DB) {
-	sqlDB, err := db.DB()
-	if err != nil {
-		log.Printf("[ERROR] failed to get underlying DB: %v\n", err)
-		return
-	}
-	if err := sqlDB.Close(); err != nil {
-		log.Printf("[ERROR] failed to close database connection: %v\n", err)
+	if db != nil {
+		sqlDB, err := db.DB()
+		if err != nil {
+			log.Printf("[ERROR] failed to get underlying DB: %v\n", err)
+			return
+		}
+		if err := sqlDB.Close(); err != nil {
+			log.Printf("[ERROR] failed to close database connection: %v\n", err)
+			return
+		}
+	} else {
+		log.Printf("[ERROR] failed to close database connection: %s\n", "there is no connection to the database")
 		return
 	}
 }
