@@ -13,7 +13,6 @@ import (
 	con "bjm/db/benjamit"
 
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 var (
@@ -26,44 +25,47 @@ func isValidSSEPath(path string) bool {
 	return re.MatchString(path)
 }
 
-func deleteOldLogs(db *gorm.DB) {
-	getEnv := os.Getenv("LOG_CLEANING_DAY")
-	day := 30
-	if getEnv != "" {
-		convInt, convIntErr := strconv.Atoi(getEnv)
-		if convIntErr == nil {
-			day = convInt
-		}
-	}
-	thirtyDaysAgo := time.Now().AddDate(0, 0, -day)
-	if err := db.Where("created_at < ?", thirtyDaysAgo).Delete(&model.ApiTransactionLog{}).Error; err != nil {
-		log.Printf("[ERROR] failed to delete old logs: %v\n", err)
+func deleteOldLogs() {
+	db, dbErr := con.Connect()
+	defer con.ConnectClose(db)
+	if dbErr != nil {
+		log.Printf("[ERROR] failed to connect to database: %v\n", dbErr)
 	} else {
-		log.Printf("[INFO] deleted logs older than %d days\n", day)
+		sqlDB, err := db.DB()
+		if err != nil {
+			log.Printf("[ERROR] failed to get underlying DB: %v\n", err)
+		} else if pingErr := sqlDB.Ping(); pingErr != nil {
+			log.Printf("[WARN] database connection lost: %v. Retrying...\n", pingErr)
+		} else {
+			getEnv := os.Getenv("LOG_CLEANING_DAY")
+			day := 30
+			if getEnv != "" {
+				convInt, convIntErr := strconv.Atoi(getEnv)
+				if convIntErr == nil {
+					day = convInt
+				}
+			}
+			thirtyDaysAgo := time.Now().AddDate(0, 0, -day)
+			if err := db.Where("created_at < ?", thirtyDaysAgo).Delete(&model.ApiTransactionLog{}).Error; err != nil {
+				log.Printf("[ERROR] failed to delete old logs: %v\n", err)
+			} else {
+				log.Printf("[INFO] deleted logs older than %d days\n", day)
+			}
+		}
 	}
 }
 
-func logCleanupTask(db *gorm.DB) {
+func logCleanupTask() {
 	ticker := time.NewTicker(24 * time.Hour)
 	defer ticker.Stop()
 
 	for {
 		<-ticker.C
-		sqlDB, err := db.DB()
-		if err != nil {
-			log.Printf("[ERROR] failed to get underlying DB: %v\n", err)
-			continue
-		}
-
-		if pingErr := sqlDB.Ping(); pingErr != nil {
-			log.Printf("[WARN] database connection lost: %v. Retrying...\n", pingErr)
-			continue
-		}
-		deleteOldLogs(db)
+		deleteOldLogs()
 	}
 }
 
-func logMiddleware(db *gorm.DB) fiber.Handler {
+func logMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		err := c.Next()
 
@@ -103,11 +105,16 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 					Headers:      string(headersJson),
 					Origin:       origin,
 				}
-
-				if err := db.Create(&responseLog).Error; err != nil {
-					log.Printf("[ERROR] logging recording errors: %v\n", err)
+				db, dbErr := con.Connect()
+				defer con.ConnectClose(db)
+				if dbErr != nil {
+					log.Printf("[ERROR] failed to connect to database: %v\n", dbErr)
 				} else {
-					log.Printf("[INFO] logging request for path: %s\n", c.Path())
+					if err := db.Create(&responseLog).Error; err != nil {
+						log.Printf("[ERROR] logging recording errors: %v\n", err)
+					} else {
+						log.Printf("[INFO] logging request for path: %s\n", c.Path())
+					}
 				}
 			}()
 		}
@@ -116,15 +123,9 @@ func logMiddleware(db *gorm.DB) fiber.Handler {
 }
 
 func UseApiTransactionLog(app *fiber.App) fiber.Router {
-	db, dbErr := con.Connect()
-	if dbErr != nil {
-		log.Printf("[ERROR] failed to connect to database: %v\n", dbErr)
-		return app.Group("")
-	}
-
 	cleanupOnce.Do(func() {
-		go logCleanupTask(db)
+		go logCleanupTask()
 	})
 
-	return app.Group("", logMiddleware(db))
+	return app.Group("", logMiddleware())
 }
