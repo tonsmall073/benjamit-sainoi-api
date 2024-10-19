@@ -70,6 +70,8 @@ func startServerApi() {
 	app := fiber.New()
 	middlewares.UseTimeZone(app)
 	middlewares.UseFiberCors(app)
+	middlewares.UseFiberHelmet(app)
+	middlewares.UseRequestLimit(app)
 	middlewares.UseSwagger(app)
 	sse := ssefiber.New(app, "")
 	route := middlewares.UseApiTransactionLog(app)
