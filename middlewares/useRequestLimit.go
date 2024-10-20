@@ -36,5 +36,8 @@ func UseRequestLimit(app *fiber.App) {
 				fiber.StatusTooManyRequests,
 			)
 		},
+		Next: func(c *fiber.Ctx) bool {
+			return utils.IsSwaggerPath(c.Path())
+		},
 	}))
 }
