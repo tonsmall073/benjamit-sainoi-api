@@ -5,17 +5,17 @@ import (
 )
 
 type CreateUserRequestModel struct {
-	Username      string    `json:"username"`
-	Password      string    `json:"password"`
-	PrefixUuid    string    `json:"prefixUuid"`
-	Nickname      string    `json:"nickname"`
-	Firstname     string    `json:"firstname"`
-	Lastname      string    `json:"lastname"`
-	Birthday      time.Time `json:"birthday"`
-	Email         string    `json:"email"`
-	LindId        string    `json:"lindid"`
-	MobilePhoneNo string    `json:"mobilePhoneNo"`
-	HomePhoneNo   string    `json:"homePhoneNostring"`
+	Username      string    `json:"username" validate:"required,min=7"`
+	Password      string    `json:"password" validate:"required,min=8"`
+	PrefixUuid    string    `json:"prefixUuid" validate:"required"`
+	Nickname      string    `json:"nickname" validate:"required"`
+	Firstname     string    `json:"firstname" validate:"required"`
+	Lastname      string    `json:"lastname" validate:"required"`
+	Birthday      time.Time `json:"birthday" validate:"required"`
+	Email         string    `json:"email" validate:"required,email"`
+	LindId        string    `json:"lindid" validate:"required"`
+	MobilePhoneNo string    `json:"mobilePhoneNo" validate:"required,phone"`
+	HomePhoneNo   string    `json:"homePhoneNo"`
 }
 
 type CreateUserResponseModel struct {

@@ -6,9 +6,9 @@ import (
 )
 
 type SendRequestModel struct {
-	Message     string                 `json:"message"`
-	MessageType models.MessageTypeEnum `json:"messageType"`
-	ChannelName string                 `json:"channelName"`
+	Message     string                 `json:"message" validate:"required"`
+	MessageType models.MessageTypeEnum `json:"messageType" validate:"required,messageTypeEnum"`
+	ChannelName string                 `json:"channelName" validate:"required"`
 }
 
 type SendResponseModel struct {

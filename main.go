@@ -75,6 +75,7 @@ func startServerApi() {
 	middlewares.UseSwagger(app)
 	sse := ssefiber.New(app, "")
 	route := middlewares.UseApiTransactionLog(app)
+	utils.UseValidator()
 	v1.UseRoute(route, sse)
 	v2.UseRoute(route)
 

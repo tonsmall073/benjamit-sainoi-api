@@ -3,9 +3,9 @@ package dto
 import "time"
 
 type CreateNotiRequestModel struct {
-	SendToUserUuid string `json:"sendToUserUuid"`
-	Title          string `json:"title"`
-	Description    string `json:"description"`
+	SendToUserUuid string `json:"sendToUserUuid" validate:"required"`
+	Title          string `json:"title" validate:"required"`
+	Description    string `json:"description" validate:"required"`
 }
 
 type CreateNotiResponseModel struct {

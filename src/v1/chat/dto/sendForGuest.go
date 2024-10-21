@@ -6,11 +6,11 @@ import (
 )
 
 type SendForGuestRequestModel struct {
-	ClientId    string                 `json:"clientId"`
-	Message     string                 `json:"message"`
-	MessageType models.MessageTypeEnum `json:"messageType"`
-	Fullname    string                 `json:"fullname"`
-	Nickname    string                 `json:"nickname"`
+	ClientId    string                 `json:"clientId" validate:"required"`
+	Message     string                 `json:"message" validate:"required"`
+	MessageType models.MessageTypeEnum `json:"messageType" validate:"required,messageTypeEnum"`
+	Fullname    string                 `json:"fullname" validate:"required"`
+	Nickname    string                 `json:"nickname" validate:"required"`
 }
 
 type SendForGuestResponseModel struct {

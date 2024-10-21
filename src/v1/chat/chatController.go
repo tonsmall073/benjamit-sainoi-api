@@ -35,8 +35,11 @@ func send(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	go func() {
 		defer wg.Done()
 		reqModel := &dto.SendRequestModel{}
-		err := c.BodyParser(reqModel)
-		if err != nil {
+		if err := c.BodyParser(reqModel); err != nil {
+			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
+			return
+		}
+		if err := utils.Validate.Struct(reqModel); err != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
 			return
 		}
@@ -88,8 +91,11 @@ func sendForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	go func() {
 		defer wg.Done()
 		reqModel := &dto.SendForGuestRequestModel{}
-		err := c.BodyParser(reqModel)
-		if err != nil {
+		if err := c.BodyParser(reqModel); err != nil {
+			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
+			return
+		}
+		if err := utils.Validate.Struct(reqModel); err != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
 			return
 		}

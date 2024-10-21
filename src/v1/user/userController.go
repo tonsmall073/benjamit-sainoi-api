@@ -29,8 +29,11 @@ func createUser(c *fiber.Ctx) error {
 	go func() {
 		defer wg.Done()
 		reqModel := &dto.CreateUserRequestModel{}
-		err := c.BodyParser(reqModel)
-		if err != nil {
+		if err := c.BodyParser(reqModel); err != nil {
+			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
+			return
+		}
+		if err := utils.Validate.Struct(reqModel); err != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
 			return
 		}
@@ -80,8 +83,11 @@ func login(c *fiber.Ctx) error {
 	go func() {
 		defer wg.Done()
 		reqModel := &dto.LoginRequestModel{}
-		err := c.BodyParser(reqModel)
-		if err != nil {
+		if err := c.BodyParser(reqModel); err != nil {
+			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
+			return
+		}
+		if err := utils.Validate.Struct(reqModel); err != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
 			return
 		}

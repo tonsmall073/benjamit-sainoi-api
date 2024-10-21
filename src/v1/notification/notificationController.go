@@ -32,8 +32,11 @@ func createNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	go func() {
 		defer wg.Done()
 		reqModel := &dto.CreateNotiRequestModel{}
-		err := c.BodyParser(reqModel)
-		if err != nil {
+		if err := c.BodyParser(reqModel); err != nil {
+			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
+			return
+		}
+		if err := utils.Validate.Struct(reqModel); err != nil {
 			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
 			return
 		}
