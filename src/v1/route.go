@@ -2,6 +2,7 @@ package v1
 
 import (
 	"bjm/src/v1/chat"
+	"bjm/src/v1/incomeAndExpense"
 	"bjm/src/v1/notification"
 	"bjm/src/v1/prefix"
 	"bjm/src/v1/product"
@@ -18,4 +19,5 @@ func UseRoute(app fiber.Router, sse *ssefiber.FiberSSEApp) {
 	product.Setup(route)
 	chat.Setup(route, sse)
 	notification.Setup(route, sse)
+	incomeAndExpense.SetUp(route)
 }

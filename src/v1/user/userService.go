@@ -32,7 +32,7 @@ func (s *UserService) CreateUser(
 		resModel.MessageDesc = "Invalid UUID format " + reqModel.PrefixUuid
 		return resModel
 	}
-	getPrefix, getPrefixErr := s.fetchPrefixByUuid(uuid)
+	getPrefix, getPrefixErr := s.fetchPrefixByUuid(uuid.String())
 	if getPrefixErr != nil {
 		resModel.StatusCode = 400
 		resModel.MessageDesc = getPrefixErr.Error()
@@ -125,12 +125,12 @@ func (s *UserService) insertUser(data model.User) (model.User, error) {
 	return data, nil
 }
 
-func (s *UserService) fetchPrefixByUuid(uuid uuid.UUID) (model.Prefix, error) {
+func (s *UserService) fetchPrefixByUuid(uuid string) (model.Prefix, error) {
 	prefix := model.Prefix{}
 	result := s._context.Where("uuid = ? AND deleted_at IS NULL", uuid).First(&prefix)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			return prefix, errors.New("uuid " + uuid.String() + " prefix information not found")
+			return prefix, errors.New("uuid " + uuid + " prefix information not found")
 		}
 		return prefix, result.Error
 	}

@@ -10,9 +10,9 @@ type Notification struct {
 	UUID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();unique" json:"uuid"`
 	Title        string    `gorm:"not null"`
 	Description  string    `gorm:"not null"`
-	UserId       int       `gorm:"null"`
+	UserId       int       `gorm:"null;default:null"`
 	User         User      `gorm:"foreignKey:UserId" json:"user"`
 	ReadStatus   bool      `gorm:"default:false"`
-	SendToUserId int       `gorm:"null"`
+	SendToUserId int       `gorm:"null;default:null"`
 	SendToUser   User      `gorm:"foreignKey:SendToUserId" json:"send_to_user"`
 }
