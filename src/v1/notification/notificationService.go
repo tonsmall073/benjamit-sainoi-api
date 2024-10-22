@@ -17,7 +17,7 @@ type NotificationService struct {
 	_context *gorm.DB
 }
 
-func (s NotificationService) CreateNoti(
+func (s *NotificationService) CreateNoti(
 	reqModel *dto.CreateNotiRequestModel,
 	resModel *dto.CreateNotiResponseModel,
 	uuid string,
@@ -65,7 +65,7 @@ func (s NotificationService) CreateNoti(
 
 	return resModel
 }
-func (s NotificationService) EventNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp, uuid string) error {
+func (s *NotificationService) EventNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp, uuid string) error {
 
 	channel := sse.GetChannel(uuid)
 	if channel == nil {
@@ -75,7 +75,7 @@ func (s NotificationService) EventNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp, 
 	return channel.ServeHTTP(c)
 }
 
-func (s NotificationService) fetchUserByUuid(uuid string) (models.User, error) {
+func (s *NotificationService) fetchUserByUuid(uuid string) (models.User, error) {
 	user := models.User{}
 	result := s._context.Preload("Prefix").Where("uuid = ? AND deleted_at IS NULL", uuid).First(&user)
 	if result.Error != nil {
@@ -87,14 +87,14 @@ func (s NotificationService) fetchUserByUuid(uuid string) (models.User, error) {
 	return user, nil
 }
 
-func (s NotificationService) insertNoti(data models.Notification) (models.Notification, error) {
+func (s *NotificationService) insertNoti(data models.Notification) (models.Notification, error) {
 	if err := s._context.Create(&data).Error; err != nil {
 		return data, err
 	}
 	return data, nil
 }
 
-func (s NotificationService) mapCreateNotiResponseModel(
+func (s *NotificationService) mapCreateNotiResponseModel(
 	inserNotiData models.Notification,
 	userData models.User,
 	sendToUserData models.User,

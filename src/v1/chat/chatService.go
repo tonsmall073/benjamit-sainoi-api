@@ -17,7 +17,7 @@ type ChatService struct {
 	_context *gorm.DB
 }
 
-func (s ChatService) Send(
+func (s *ChatService) Send(
 	reqModel *dto.SendRequestModel,
 	resModel *dto.SendResponseModel,
 	uuid string,
@@ -59,7 +59,7 @@ func (s ChatService) Send(
 	return resModel
 }
 
-func (s ChatService) sendForGuest(
+func (s *ChatService) sendForGuest(
 	reqModel *dto.SendForGuestRequestModel,
 	resModel *dto.SendForGuestResponseModel,
 	sse *ssefiber.FiberSSEApp,
@@ -93,7 +93,7 @@ func (s ChatService) sendForGuest(
 	return resModel
 }
 
-func (s ChatService) EventChat(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
+func (s *ChatService) EventChat(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	channelName := c.Params("channelName")
 
 	channel := sse.GetChannel(channelName)
@@ -104,7 +104,7 @@ func (s ChatService) EventChat(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	return channel.ServeHTTP(c)
 }
 
-func (s ChatService) EventChatForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
+func (s *ChatService) EventChatForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	channel := sse.GetChannel("guest")
 	if channel == nil {
 		channel = sse.CreateChannel("/chat/guest", "/chat/guest")
@@ -113,14 +113,14 @@ func (s ChatService) EventChatForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) 
 	return channel.ServeHTTP(c)
 }
 
-func (s ChatService) insertChat(data models.Chat) (models.Chat, error) {
+func (s *ChatService) insertChat(data models.Chat) (models.Chat, error) {
 	if err := s._context.Create(&data).Error; err != nil {
 		return data, err
 	}
 	return data, nil
 }
 
-func (s ChatService) fetchUserByUuid(uuid string) (models.User, error) {
+func (s *ChatService) fetchUserByUuid(uuid string) (models.User, error) {
 	user := models.User{}
 	result := s._context.Preload("Prefix").Where("uuid = ? AND deleted_at IS NULL", uuid).First(&user)
 	if result.Error != nil {
@@ -132,7 +132,7 @@ func (s ChatService) fetchUserByUuid(uuid string) (models.User, error) {
 	return user, nil
 }
 
-func (s ChatService) conditionInsertChatData(
+func (s *ChatService) conditionInsertChatData(
 	reqModel *dto.SendRequestModel,
 	userData models.User,
 	uuid string,
@@ -155,7 +155,7 @@ func (s ChatService) conditionInsertChatData(
 	return res
 }
 
-func (s ChatService) mapSendResponseModel(
+func (s *ChatService) mapSendResponseModel(
 	chatData models.Chat,
 	userData models.User,
 	resModel *dto.SendResponseModel,
@@ -178,7 +178,7 @@ func (s ChatService) mapSendResponseModel(
 	}
 }
 
-func (s ChatService) mapSendForGuestResponseModel(
+func (s *ChatService) mapSendForGuestResponseModel(
 	chatData models.Chat,
 	reqModel *dto.SendForGuestRequestModel,
 	resModel *dto.SendForGuestResponseModel,

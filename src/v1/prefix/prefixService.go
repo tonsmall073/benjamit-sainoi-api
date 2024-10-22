@@ -12,7 +12,7 @@ type PrefixService struct {
 	_context *gorm.DB
 }
 
-func (s PrefixService) GetAllPrefix(resModel *dto.GetAllPrefixResponseModel) *dto.GetAllPrefixResponseModel {
+func (s *PrefixService) GetAllPrefix(resModel *dto.GetAllPrefixResponseModel) *dto.GetAllPrefixResponseModel {
 
 	data, dataErr := s.fetchAllPrefix()
 	if dataErr != nil {
@@ -26,7 +26,7 @@ func (s PrefixService) GetAllPrefix(resModel *dto.GetAllPrefixResponseModel) *dt
 	return resModel
 }
 
-func (s PrefixService) fetchAllPrefix() ([]models.Prefix, error) {
+func (s *PrefixService) fetchAllPrefix() ([]models.Prefix, error) {
 	prefixes := []models.Prefix{}
 	if err := s._context.Where("deleted_at IS NULL").Find(&prefixes).Error; err != nil {
 		return prefixes, err
@@ -34,7 +34,7 @@ func (s PrefixService) fetchAllPrefix() ([]models.Prefix, error) {
 	return prefixes, nil
 }
 
-func (s PrefixService) mapGetAllPrefixResponseModel(data []models.Prefix, resModel *dto.GetAllPrefixResponseModel) {
+func (s *PrefixService) mapGetAllPrefixResponseModel(data []models.Prefix, resModel *dto.GetAllPrefixResponseModel) {
 	dataSub := []*dto.GetAllPrefixDataListResponseModel{}
 	for _, item := range data {
 		obj := &dto.GetAllPrefixDataListResponseModel{

@@ -16,7 +16,7 @@ type UserService struct {
 	_context *gorm.DB
 }
 
-func (s UserService) CreateUser(
+func (s *UserService) CreateUser(
 	reqModel *dto.CreateUserRequestModel,
 	resModel *dto.CreateUserResponseModel,
 ) *dto.CreateUserResponseModel {
@@ -63,7 +63,7 @@ func (s UserService) CreateUser(
 	return resModel
 }
 
-func (s UserService) Login(
+func (s *UserService) Login(
 	reqModel *dto.LoginRequestModel,
 	resModel *dto.LoginResponseModel,
 ) *dto.LoginResponseModel {
@@ -103,7 +103,7 @@ func (s UserService) Login(
 	return resModel
 }
 
-func (s UserService) GetProfile(
+func (s *UserService) GetProfile(
 	uuid string, resModel *dto.GetProfileResponseModel,
 ) *dto.GetProfileResponseModel {
 	data, dataErr := s.fetchUserByUuid(uuid)
@@ -118,14 +118,14 @@ func (s UserService) GetProfile(
 	return resModel
 }
 
-func (s UserService) insertUser(data model.User) (model.User, error) {
+func (s *UserService) insertUser(data model.User) (model.User, error) {
 	if err := s._context.Create(&data).Error; err != nil {
 		return data, err
 	}
 	return data, nil
 }
 
-func (s UserService) fetchPrefixByUuid(uuid uuid.UUID) (model.Prefix, error) {
+func (s *UserService) fetchPrefixByUuid(uuid uuid.UUID) (model.Prefix, error) {
 	prefix := model.Prefix{}
 	result := s._context.Where("uuid = ? AND deleted_at IS NULL", uuid).First(&prefix)
 	if result.Error != nil {
@@ -137,7 +137,7 @@ func (s UserService) fetchPrefixByUuid(uuid uuid.UUID) (model.Prefix, error) {
 	return prefix, nil
 }
 
-func (s UserService) fetchUserByUsername(username string) (model.User, error) {
+func (s *UserService) fetchUserByUsername(username string) (model.User, error) {
 	user := model.User{}
 	result := s._context.Preload("Prefix").Where("username = ? AND deleted_at IS NULL", username).First(&user)
 	if result.Error != nil {
@@ -149,7 +149,7 @@ func (s UserService) fetchUserByUsername(username string) (model.User, error) {
 	return user, nil
 }
 
-func (s UserService) fetchUserByUuid(uuid string) (model.User, error) {
+func (s *UserService) fetchUserByUuid(uuid string) (model.User, error) {
 	user := model.User{}
 	result := s._context.Preload("Prefix").Where("uuid = ? AND deleted_at IS NULL", uuid).First(&user)
 	if result.Error != nil {
@@ -161,7 +161,7 @@ func (s UserService) fetchUserByUuid(uuid string) (model.User, error) {
 	return user, nil
 }
 
-func (s UserService) mapCreateUserResponseModel(
+func (s *UserService) mapCreateUserResponseModel(
 	userData model.User,
 	prefixData model.Prefix,
 	resModel *dto.CreateUserResponseModel,
@@ -177,7 +177,7 @@ func (s UserService) mapCreateUserResponseModel(
 	resModel.Data = data
 }
 
-func (s UserService) mapLoginResponseModel(
+func (s *UserService) mapLoginResponseModel(
 	userData model.User,
 	token string,
 	resModel *dto.LoginResponseModel,
@@ -195,7 +195,7 @@ func (s UserService) mapLoginResponseModel(
 	resModel.Data = data
 }
 
-func (s UserService) mapGetProfileResponseModel(
+func (s *UserService) mapGetProfileResponseModel(
 	userData model.User,
 	resModel *dto.GetProfileResponseModel,
 ) {
