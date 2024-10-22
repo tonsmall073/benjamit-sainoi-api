@@ -18,6 +18,7 @@ func Setup(route fiber.Router) {
 	authAdminGroup := group.Group("/admin", auth.UseAdminGuard)
 	authAdminGroup.Delete("/delete", deleteUser)
 	authAdminGroup.Get("/test", func(c *fiber.Ctx) error {
+		c.Set("Content-Type", "text/plain")
 		return c.Status(200).SendString("test ok")
 	})
 }

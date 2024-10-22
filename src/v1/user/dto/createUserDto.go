@@ -13,7 +13,7 @@ type CreateUserRequestModel struct {
 	Lastname      string    `json:"lastname" validate:"required"`
 	Birthday      time.Time `json:"birthday" validate:"required"`
 	Email         string    `json:"email" validate:"required,email"`
-	LindId        string    `json:"lindid" validate:"required"`
+	LindId        string    `json:"lindid"`
 	MobilePhoneNo string    `json:"mobilePhoneNo" validate:"required,phone"`
 	HomePhoneNo   string    `json:"homePhoneNo"`
 }
