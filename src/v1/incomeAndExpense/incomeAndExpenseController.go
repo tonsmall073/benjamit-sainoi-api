@@ -13,6 +13,7 @@ import (
 
 // @Tags IncomeAndExpense
 // @Description Create a income and expense
+// @Description TransactionType="DEBIT" | "CREDIT"
 // @Accept json
 // @Produce json
 // @Security BearerAuth

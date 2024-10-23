@@ -29,6 +29,10 @@ func main() {
 		if err := godotenv.Load("./envs/production.env"); err != nil {
 			log.Fatal("[ERROR] loading production.env file")
 		}
+	} else if mode == "staging" {
+		if err := godotenv.Load("./envs/staging.env"); err != nil {
+			log.Fatal("[ERROR] loading staging.env file")
+		}
 	} else {
 		if err := godotenv.Load("./envs/development.env"); err != nil {
 			log.Fatal("[ERROR] loading development.env file")

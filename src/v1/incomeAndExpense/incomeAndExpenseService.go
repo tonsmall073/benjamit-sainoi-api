@@ -65,8 +65,12 @@ func (s *IncomeAndExpenseService) CreateList(
 			resModel.StatusCode = 400
 			return resModel
 		}
-		_, deductErr := s.productSellingDeductStockById(int(resProSell.ID), reqModel.Quantity, reqModel.TransactionType)
+
+		s._context = s._context.Begin()
+
+		_, deductErr := s.updateProductSellingDeductStockById(int(resProSell.ID), reqModel.Quantity, reqModel.TransactionType)
 		if deductErr != nil {
+			s._context.Rollback()
 			resModel.MessageDesc = deductErr.Error()
 			resModel.StatusCode = 500
 			return resModel
@@ -86,11 +90,13 @@ func (s *IncomeAndExpenseService) CreateList(
 
 	res, resErr := s.InsertIncomeAndExpense(insertData)
 	if resErr != nil {
+		s._context.Rollback()
 		resModel.MessageDesc = resErr.Error()
 		resModel.StatusCode = 500
 		return resModel
 	}
 
+	s._context.Commit()
 	s.mapCreateListResponseModel(res, productData, productSellData, resModel)
 	resModel.MessageDesc = utils.HttpStatusCodes[201]
 	resModel.StatusCode = 201
@@ -130,7 +136,7 @@ func (s *IncomeAndExpenseService) fetchProductSellingByUuidAndProductId(uuid str
 	return productSelling, nil
 }
 
-func (s *IncomeAndExpenseService) productSellingDeductStockById(id int, deductStock int, typeEnum models.TransactionTypeEnum) (models.ProductSelling, error) {
+func (s *IncomeAndExpenseService) updateProductSellingDeductStockById(id int, qtyStock int, typeEnum models.TransactionTypeEnum) (models.ProductSelling, error) {
 	var productSelling models.ProductSelling
 
 	// ค้นหาสินค้า
@@ -143,12 +149,12 @@ func (s *IncomeAndExpenseService) productSellingDeductStockById(id int, deductSt
 
 	if typeEnum == models.DEBIT {
 		// ตรวจสอบ stock ปัจจุบัน
-		if productSelling.Stock < deductStock {
+		if productSelling.Stock < qtyStock {
 			return productSelling, errors.New("insufficient stock")
 		}
 
 		// หัก stock
-		newStock := productSelling.Stock - deductStock
+		newStock := productSelling.Stock - qtyStock
 		productSelling.Stock = newStock
 
 		// อัปเดต stock ในฐานข้อมูล
@@ -159,7 +165,7 @@ func (s *IncomeAndExpenseService) productSellingDeductStockById(id int, deductSt
 		return productSelling, nil
 	} else if typeEnum == models.CREDIT {
 		// บวก stock
-		newStock := productSelling.Stock + deductStock
+		newStock := productSelling.Stock + qtyStock
 		productSelling.Stock = newStock
 
 		// อัปเดต stock ในฐานข้อมูล

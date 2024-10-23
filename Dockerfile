@@ -14,4 +14,4 @@ RUN go build -o myapp main.go
 
 EXPOSE 8000
 
-CMD echo "s" | ./myapp
+CMD ["sh", "-c", "echo 's' | ./myapp"]

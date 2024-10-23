@@ -15,7 +15,8 @@ import (
 )
 
 // @Tags Chat
-// @Description Send a message for guest
+// @Description Send a message (user)
+// @Description MessageType="TEXT" | "IMAGE" | "EMOJI"
 // @Accept json
 // @Produce json
 // @Security BearerAuth
@@ -74,6 +75,7 @@ func send(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 
 // @Tags Chat
 // @Description Send a message (guest)
+// @Description MessageType="TEXT" | "IMAGE" | "EMOJI"
 // @Accept json
 // @Produce json
 // @Param input body dto.SendForGuestRequestModel true "send request"
