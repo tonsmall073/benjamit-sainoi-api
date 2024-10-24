@@ -4,7 +4,9 @@ import (
 	"bjm/db/benjamit/models"
 	"bjm/src/v1/incomeAndExpense/dto"
 	"bjm/utils"
+	"bjm/utils/enums"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -16,7 +18,7 @@ type IncomeAndExpenseService struct {
 func (s *IncomeAndExpenseService) CreateList(
 	reqModel *dto.CreateListRequestModel,
 	resModel *dto.CreateListResponseModel,
-	entrySource models.EntrySourceEnum,
+	entrySource enums.EntrySourceEnum,
 	uuid string,
 ) *dto.CreateListResponseModel {
 	resUser, resUserErr := s.fetchUserByUuid(uuid)
@@ -75,10 +77,10 @@ func (s *IncomeAndExpenseService) CreateList(
 			resModel.StatusCode = 500
 			return resModel
 		}
-		if reqModel.TransactionType == models.DEBIT {
+		if reqModel.TransactionType == enums.DEBIT {
 			insertData.Amount = s.adjustAmount(float64(resProSell.SellPrice)*float64(reqModel.Quantity), reqModel.TransactionType)
 		}
-		if reqModel.TransactionType == models.CREDIT {
+		if reqModel.TransactionType == enums.CREDIT {
 			insertData.Amount = s.adjustAmount(float64(resProSell.CostPrice)*float64(reqModel.Quantity), reqModel.TransactionType)
 		}
 		productData = resPro
@@ -88,7 +90,7 @@ func (s *IncomeAndExpenseService) CreateList(
 		insertData.ReferProductSellingId = int(resProSell.ID)
 	}
 
-	res, resErr := s.InsertIncomeAndExpense(insertData)
+	res, resErr := s.insertIncomeAndExpense(insertData)
 	if resErr != nil {
 		s._context.Rollback()
 		resModel.MessageDesc = resErr.Error()
@@ -103,13 +105,100 @@ func (s *IncomeAndExpenseService) CreateList(
 	return resModel
 }
 
-func (s *IncomeAndExpenseService) InsertIncomeAndExpense(
+func (s *IncomeAndExpenseService) GetAllList(
+	reqModel *dto.GetAllListRequestModel,
+	resModel *dto.GetAllListResponseModel,
+) *dto.GetAllListResponseModel {
+	getAll, totalData, getAllErr := s.fetchAllIncomeAndExpenseBySearch(
+		reqModel.Search,
+		reqModel.Sort,
+		reqModel.SortColumn,
+		reqModel.StartDate,
+		reqModel.EndDate,
+		reqModel.Skip,
+		reqModel.Take,
+	)
+	if getAllErr != nil {
+		resModel.MessageDesc = getAllErr.Error()
+		resModel.StatusCode = 500
+		return resModel
+	}
+
+	s.mapGetAllListResponseModel(getAll, resModel)
+
+	resModel.TotalData = totalData
+	resModel.MessageDesc = utils.HttpStatusCodes[200]
+	resModel.StatusCode = 200
+	return resModel
+}
+
+func (s *IncomeAndExpenseService) insertIncomeAndExpense(
 	data models.IncomeAndExpense,
 ) (models.IncomeAndExpense, error) {
 	if err := s._context.Create(&data).Error; err != nil {
 		return data, err
 	}
 	return data, nil
+}
+
+func (s *IncomeAndExpenseService) fetchAllIncomeAndExpenseBySearch(
+	search string,
+	sort enums.SortEnum,
+	sortColumn string,
+	startDate time.Time,
+	endDate time.Time,
+	skip int,
+	take int,
+) ([]models.IncomeAndExpense, int, error) {
+	var totalCount int64
+	data := []models.IncomeAndExpense{}
+	query := s._context.Preload("Product").
+		Preload("ProductSelling").
+		Preload("ProductSelling.UnitType").
+		Where("income_and_expenses.deleted_at IS NULL").
+		Joins("LEFT JOIN products ON income_and_expenses.refer_product_id = products.id").
+		Joins("LEFT JOIN product_sellings ON income_and_expenses.refer_product_selling_id = product_sellings.id").
+		Joins("LEFT JOIN unit_types ON product_sellings.unit_type_id = unit_types.id")
+
+	if search != "" {
+		query = query.Where(
+			"income_and_expenses.description LIKE ? OR "+
+				"products.name LIKE ? OR "+
+				"CAST(income_and_expenses.amount AS TEXT) LIKE ? OR "+
+				"CAST(product_sellings.sell_price AS TEXT) LIKE ? OR "+
+				"CAST(product_sellings.cost_price AS TEXT) LIKE ? OR "+
+				"unit_types.name LIKE ? OR "+
+				"unit_types.name_en LIKE ? OR "+
+				"CAST(income_and_expenses.quantity AS TEXT) LIKE ?",
+			"%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%",
+		)
+	}
+	if !startDate.IsZero() && !endDate.IsZero() {
+		query = query.Where("transaction_date BETWEEN ? AND ?", startDate, endDate)
+	}
+
+	if sort != "" && sortColumn != "" {
+		query = query.Order(sortColumn + " " + string(sort))
+	}
+
+	resultCount := query.Model(&models.IncomeAndExpense{}).Count(&totalCount)
+	if resultCount.Error != nil {
+		return nil, 0, resultCount.Error
+	}
+
+	if take >= 0 && skip >= 0 {
+		query = query.Offset(skip).Limit(take)
+	}
+
+	result := query.Find(&data)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return data, int(totalCount), errors.New("income and expense no data")
+		}
+		return data, int(totalCount), result.Error
+	}
+
+	return data, int(totalCount), nil
 }
 
 func (s *IncomeAndExpenseService) fetchProductByUuid(uuid string) (models.Product, error) {
@@ -136,7 +225,7 @@ func (s *IncomeAndExpenseService) fetchProductSellingByUuidAndProductId(uuid str
 	return productSelling, nil
 }
 
-func (s *IncomeAndExpenseService) updateProductSellingDeductStockById(id int, qtyStock int, typeEnum models.TransactionTypeEnum) (models.ProductSelling, error) {
+func (s *IncomeAndExpenseService) updateProductSellingDeductStockById(id int, qtyStock int, typeEnum enums.TransactionTypeEnum) (models.ProductSelling, error) {
 	var productSelling models.ProductSelling
 
 	// ค้นหาสินค้า
@@ -147,7 +236,7 @@ func (s *IncomeAndExpenseService) updateProductSellingDeductStockById(id int, qt
 		return productSelling, err
 	}
 
-	if typeEnum == models.DEBIT {
+	if typeEnum == enums.DEBIT {
 		// ตรวจสอบ stock ปัจจุบัน
 		if productSelling.Stock < qtyStock {
 			return productSelling, errors.New("insufficient stock")
@@ -163,7 +252,7 @@ func (s *IncomeAndExpenseService) updateProductSellingDeductStockById(id int, qt
 		}
 
 		return productSelling, nil
-	} else if typeEnum == models.CREDIT {
+	} else if typeEnum == enums.CREDIT {
 		// บวก stock
 		newStock := productSelling.Stock + qtyStock
 		productSelling.Stock = newStock
@@ -192,14 +281,14 @@ func (s *IncomeAndExpenseService) fetchUserByUuid(uuid string) (models.User, err
 
 func (s *IncomeAndExpenseService) adjustAmount(
 	amount float64,
-	typeEnum models.TransactionTypeEnum,
+	typeEnum enums.TransactionTypeEnum,
 ) float64 {
-	if typeEnum == models.DEBIT {
+	if typeEnum == enums.DEBIT {
 		if amount < 0 {
 			return -amount
 		}
 		return amount
-	} else if typeEnum == models.CREDIT {
+	} else if typeEnum == enums.CREDIT {
 		if amount > 0 {
 			return -amount
 		}
@@ -230,4 +319,32 @@ func (s *IncomeAndExpenseService) mapCreateListResponseModel(
 			},
 		},
 	}
+}
+
+func (s *IncomeAndExpenseService) mapGetAllListResponseModel(
+	incomeData []models.IncomeAndExpense,
+	resModel *dto.GetAllListResponseModel,
+) {
+	resModel.Data = make([]*dto.GetAllListDataListResponseModel, 0)
+
+	for _, data := range incomeData {
+		list := &dto.GetAllListDataListResponseModel{
+			Amount:          data.Amount,
+			Description:     data.Description,
+			TransactionDate: data.TransactionDate,
+			ProductData: &dto.GetAllListProductDataListResponseModel{
+				Name: data.Product.Name,
+			},
+			ProductSellingData: &dto.GetAllListProductSellingDataListResponseModel{
+				SellPrice: data.ProductSelling.SellPrice,
+				CostPrice: data.ProductSelling.CostPrice,
+				UnitTypeData: &dto.GetAllListUnitTypeDataListResponseModel{
+					Name:   data.ProductSelling.UnitType.Name,
+					NameEn: data.ProductSelling.UnitType.NameEn,
+				},
+			},
+		}
+		resModel.Data = append(resModel.Data, list)
+	}
+
 }

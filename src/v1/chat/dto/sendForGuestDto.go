@@ -1,16 +1,16 @@
 package dto
 
 import (
-	"bjm/db/benjamit/models"
+	"bjm/utils/enums"
 	"time"
 )
 
 type SendForGuestRequestModel struct {
-	ClientId    string                 `json:"clientId" validate:"required"`
-	Message     string                 `json:"message" validate:"required"`
-	MessageType models.MessageTypeEnum `json:"messageType" validate:"required,messageTypeEnum"`
-	Fullname    string                 `json:"fullname" validate:"required"`
-	Nickname    string                 `json:"nickname" validate:"required"`
+	ClientId    string                `json:"clientId" validate:"required"`
+	Message     string                `json:"message" validate:"required"`
+	MessageType enums.MessageTypeEnum `json:"messageType" validate:"required,messageTypeEnum"`
+	Fullname    string                `json:"fullname" validate:"required"`
+	Nickname    string                `json:"nickname" validate:"required"`
 }
 
 type SendForGuestResponseModel struct {
@@ -20,12 +20,12 @@ type SendForGuestResponseModel struct {
 }
 
 type SendForGuestDataListResponseModel struct {
-	ClientId    string                 `json:"clientId"`
-	Message     string                 `json:"message"`
-	MessageType models.MessageTypeEnum `json:"messageType"`
-	ChannelName string                 `json:"channelName"`
-	CreatedAt   time.Time              `json:"createdAt"`
-	Fullname    string                 `json:"fullname"`
-	Nickname    string                 `json:"nickname"`
-	ReadStatus  bool                   `json:"readStatus"`
+	ClientId    string                `json:"clientId"`
+	Message     string                `json:"message"`
+	MessageType enums.MessageTypeEnum `json:"messageType"`
+	ChannelName string                `json:"channelName"`
+	CreatedAt   time.Time             `json:"createdAt"`
+	Fullname    string                `json:"fullname"`
+	Nickname    string                `json:"nickname"`
+	ReadStatus  bool                  `json:"readStatus"`
 }

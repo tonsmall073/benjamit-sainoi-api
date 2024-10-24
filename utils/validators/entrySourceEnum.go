@@ -1,7 +1,7 @@
 package validators
 
 import (
-	"bjm/db/benjamit/models"
+	"bjm/utils/enums"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -9,6 +9,6 @@ import (
 func EntrySourceEnum(validate *validator.Validate) {
 	validate.RegisterValidation("entrySourceEnum", func(fl validator.FieldLevel) bool {
 		role := fl.Field().String()
-		return role == string(models.SYSTEM) || role == string(models.MANUAL)
+		return role == string(enums.SYSTEM) || role == string(enums.MANUAL)
 	})
 }

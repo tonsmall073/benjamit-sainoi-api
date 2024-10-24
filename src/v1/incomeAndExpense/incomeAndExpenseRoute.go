@@ -11,4 +11,5 @@ func SetUp(route fiber.Router) {
 
 	groupAuth := group.Group("/user", auth.UseUserGuard)
 	groupAuth.Post("/create", createList)
+	groupAuth.Post("/getAll", getAllList)
 }

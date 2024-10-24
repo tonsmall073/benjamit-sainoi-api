@@ -3,6 +3,7 @@ package db
 import (
 	"bjm/db/benjamit"
 	"bjm/db/benjamit/models"
+	"bjm/utils/enums"
 	"fmt"
 	"log"
 	"os"
@@ -55,21 +56,21 @@ func migrateBenjamitDatabase() {
 func createEnums(db *gorm.DB) []error {
 	enumDefinitions := map[string][]string{
 		"role_enum": {
-			string(models.USER),
-			string(models.ADMIN),
+			string(enums.USER),
+			string(enums.ADMIN),
 		},
 		"message_type_enum": {
-			string(models.TEXT),
-			string(models.IMAGE),
-			string(models.EMOJI),
+			string(enums.TEXT),
+			string(enums.IMAGE),
+			string(enums.EMOJI),
 		},
 		"transaction_type_enum": {
-			string(models.DEBIT),
-			string(models.CREDIT),
+			string(enums.DEBIT),
+			string(enums.CREDIT),
 		},
 		"entry_source_enum": {
-			string(models.MANUAL),
-			string(models.SYSTEM),
+			string(enums.MANUAL),
+			string(enums.SYSTEM),
 		},
 	}
 

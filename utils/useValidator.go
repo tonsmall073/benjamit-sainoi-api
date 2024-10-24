@@ -17,4 +17,5 @@ func UseValidator() {
 	validators.EntrySourceEnum(Validate)
 	validators.MessageTypeEnum(Validate)
 	validators.TransactionTypeEnum(Validate)
+	validators.SortEnum(Validate)
 }

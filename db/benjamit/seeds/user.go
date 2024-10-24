@@ -3,6 +3,7 @@ package seeds
 import (
 	"bjm/db/benjamit/models"
 	"bjm/utils"
+	"bjm/utils/enums"
 )
 
 func User() []models.User {
@@ -19,7 +20,7 @@ func User() []models.User {
 			LineId:        "tonsmall073",
 			MobilePhoneNo: "0819999999",
 			HomePhoneNo:   "029999999",
-			Role:          models.USER,
+			Role:          enums.USER,
 		},
 		{
 			Username:      "admin",
@@ -33,7 +34,7 @@ func User() []models.User {
 			LineId:        "tonsmall073",
 			MobilePhoneNo: "0819999999",
 			HomePhoneNo:   "029999999",
-			Role:          models.ADMIN,
+			Role:          enums.ADMIN,
 		},
 	}
 	return data

@@ -1,17 +1,25 @@
 package dto
 
-import "time"
+import (
+	"bjm/utils/enums"
+	"time"
+)
 
 type GetAllListRequestModel struct {
-	Search    string    `json:"search"`
-	StartDate time.Time `json:"startDate"`
-	EndDate   time.Time `json:"endDate"`
+	Search     string         `json:"search"`
+	StartDate  time.Time      `json:"startDate"`
+	EndDate    time.Time      `json:"endDate"`
+	Take       int            `json:"take"`
+	Skip       int            `json:"skip"`
+	Sort       enums.SortEnum `json:"sort"`
+	SortColumn string         `json:"sortColumn"`
 }
 
 type GetAllListResponseModel struct {
 	StatusCode  int                                `json:"statusCode"`
 	MessageDesc string                             `json:"messageDesc"`
 	Data        []*GetAllListDataListResponseModel `json:"data"`
+	TotalData   int                                `json:"totalData"`
 }
 
 type GetAllListDataListResponseModel struct {

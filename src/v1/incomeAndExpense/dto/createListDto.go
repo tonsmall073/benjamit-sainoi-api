@@ -1,19 +1,19 @@
 package dto
 
 import (
-	"bjm/db/benjamit/models"
+	"bjm/utils/enums"
 	"time"
 )
 
 type CreateListRequestModel struct {
-	Quantity                int                        `json:"quantity"`
-	Amount                  float64                    `json:"amount" validate:"required"`
-	Description             string                     `json:"description" validate:"required"`
-	TransactionDate         time.Time                  `json:"transactionDate" validate:"required"`
-	ReferProductUuid        string                     `json:"referProductUuid"`
-	ReferProductSellingUuid string                     `json:"referProductSellingUuid"`
-	TransactionType         models.TransactionTypeEnum `json:"transactionType" validate:"required,transactionTypeEnum"`
-	ReferProductStatus      bool                       `json:"referProductStatus"`
+	Quantity                int                       `json:"quantity"`
+	Amount                  float64                   `json:"amount" validate:"required"`
+	Description             string                    `json:"description" validate:"required"`
+	TransactionDate         time.Time                 `json:"transactionDate" validate:"required"`
+	ReferProductUuid        string                    `json:"referProductUuid"`
+	ReferProductSellingUuid string                    `json:"referProductSellingUuid"`
+	TransactionType         enums.TransactionTypeEnum `json:"transactionType" validate:"required,transactionTypeEnum"`
+	ReferProductStatus      bool                      `json:"referProductStatus"`
 }
 
 type CreateListResponseModel struct {
