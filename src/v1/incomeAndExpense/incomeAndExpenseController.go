@@ -51,6 +51,7 @@ func createList(c *fiber.Ctx) error {
 // @Description unlimited: take=-1 or skip=-1
 // @Description sort: "ASC" | "DESC"
 // @Description Didn't search in between date is not request body StartDate and EndDate
+// @Description Didn't sort in column is not request body sort and sortColumn
 // @Description sortColumn: "income_and_expenses.amount" | "product_sellings.sell_price" | "product_sellings.cost_price" | "unit_types.name" | "income_and_expenses.quantity" | "income_and_expenses.description" | "products.name"
 // @Accept json
 // @Produce json

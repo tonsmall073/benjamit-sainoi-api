@@ -6,6 +6,8 @@ import (
 	"bjm/utils"
 	"bjm/utils/enums"
 	"errors"
+	"fmt"
+	"sync"
 	"time"
 
 	"gorm.io/gorm"
@@ -109,17 +111,70 @@ func (s *IncomeAndExpenseService) GetAllList(
 	reqModel *dto.GetAllListRequestModel,
 	resModel *dto.GetAllListResponseModel,
 ) *dto.GetAllListResponseModel {
-	getAll, totalData, getAllErr := s.fetchAllIncomeAndExpenseBySearch(
-		reqModel.Search,
-		reqModel.Sort,
-		reqModel.SortColumn,
-		reqModel.StartDate,
-		reqModel.EndDate,
-		reqModel.Skip,
-		reqModel.Take,
-	)
-	if getAllErr != nil {
-		resModel.MessageDesc = getAllErr.Error()
+	getAllChan := make(chan []models.IncomeAndExpense)
+	totalDataChan := make(chan int)
+	errChan := make(chan error)
+
+	var wg sync.WaitGroup
+	addDelta := 2
+	wg.Add(addDelta)
+
+	go func() {
+		defer wg.Done()
+		getAll, getAllErr := s.fetchAllIncomeAndExpenseBySearch(
+			reqModel.Search,
+			reqModel.Sort,
+			reqModel.SortColumn,
+			reqModel.StartDate,
+			reqModel.EndDate,
+			reqModel.Skip,
+			reqModel.Take,
+		)
+		if getAllErr != nil {
+			errChan <- getAllErr
+			return
+		}
+		getAllChan <- getAll
+	}()
+
+	go func() {
+		defer wg.Done()
+		totalData, totalDataErr := s.getSummaryCountIncomeAndExpenseBySearch(
+			reqModel.Search,
+			reqModel.StartDate,
+			reqModel.EndDate,
+		)
+		if totalDataErr != nil {
+			errChan <- totalDataErr
+			return
+		}
+		totalDataChan <- totalData
+	}()
+
+	go func() {
+		wg.Wait()
+		close(getAllChan)
+		close(totalDataChan)
+		close(errChan)
+	}()
+
+	var getAll []models.IncomeAndExpense
+	var totalData int
+	var resErr []error
+
+	for i := 0; i < addDelta; i++ {
+		select {
+		case result := <-getAllChan:
+			getAll = result
+		case resultCount := <-totalDataChan:
+			totalData = resultCount
+		case resultErr := <-errChan:
+			resErr = append(resErr, resultErr)
+		}
+	}
+
+	if len(resErr) > 0 {
+		resModel.MessageDesc = fmt.Sprintf("Errors: %v", resErr)
 		resModel.StatusCode = 500
 		return resModel
 	}
@@ -149,8 +204,7 @@ func (s *IncomeAndExpenseService) fetchAllIncomeAndExpenseBySearch(
 	endDate time.Time,
 	skip int,
 	take int,
-) ([]models.IncomeAndExpense, int, error) {
-	var totalCount int64
+) ([]models.IncomeAndExpense, error) {
 	data := []models.IncomeAndExpense{}
 	query := s._context.Preload("Product").
 		Preload("ProductSelling").
@@ -181,11 +235,6 @@ func (s *IncomeAndExpenseService) fetchAllIncomeAndExpenseBySearch(
 		query = query.Order(sortColumn + " " + string(sort))
 	}
 
-	resultCount := query.Model(&models.IncomeAndExpense{}).Count(&totalCount)
-	if resultCount.Error != nil {
-		return nil, 0, resultCount.Error
-	}
-
 	if take >= 0 && skip >= 0 {
 		query = query.Offset(skip).Limit(take)
 	}
@@ -193,12 +242,50 @@ func (s *IncomeAndExpenseService) fetchAllIncomeAndExpenseBySearch(
 	result := query.Find(&data)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			return data, int(totalCount), errors.New("income and expense no data")
+			return data, errors.New("income and expense no data")
 		}
-		return data, int(totalCount), result.Error
+		return data, result.Error
 	}
 
-	return data, int(totalCount), nil
+	return data, nil
+}
+
+func (s *IncomeAndExpenseService) getSummaryCountIncomeAndExpenseBySearch(
+	search string,
+	startDate time.Time,
+	endDate time.Time,
+) (int, error) {
+	var totalCount int64
+	query := s._context.Preload("Product").
+		Preload("ProductSelling").
+		Preload("ProductSelling.UnitType").
+		Where("income_and_expenses.deleted_at IS NULL").
+		Joins("LEFT JOIN products ON income_and_expenses.refer_product_id = products.id").
+		Joins("LEFT JOIN product_sellings ON income_and_expenses.refer_product_selling_id = product_sellings.id").
+		Joins("LEFT JOIN unit_types ON product_sellings.unit_type_id = unit_types.id")
+
+	if search != "" {
+		query = query.Where(
+			"income_and_expenses.description LIKE ? OR "+
+				"products.name LIKE ? OR "+
+				"CAST(income_and_expenses.amount AS TEXT) LIKE ? OR "+
+				"CAST(product_sellings.sell_price AS TEXT) LIKE ? OR "+
+				"CAST(product_sellings.cost_price AS TEXT) LIKE ? OR "+
+				"unit_types.name LIKE ? OR "+
+				"unit_types.name_en LIKE ? OR "+
+				"CAST(income_and_expenses.quantity AS TEXT) LIKE ?",
+			"%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%",
+		)
+	}
+	if !startDate.IsZero() && !endDate.IsZero() {
+		query = query.Where("transaction_date BETWEEN ? AND ?", startDate, endDate)
+	}
+	resultCount := query.Model(&models.IncomeAndExpense{}).Count(&totalCount)
+	if resultCount.Error != nil {
+		return 0, resultCount.Error
+	}
+
+	return int(totalCount), nil
 }
 
 func (s *IncomeAndExpenseService) fetchProductByUuid(uuid string) (models.Product, error) {
