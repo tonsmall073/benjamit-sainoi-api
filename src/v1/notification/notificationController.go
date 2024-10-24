@@ -5,7 +5,6 @@ import (
 	db "bjm/db/benjamit"
 	"bjm/src/v1/notification/dto"
 	"bjm/utils"
-	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jsorb84/ssefiber"
@@ -23,50 +22,29 @@ import (
 // @Failure 500 {object} utils.ErrorResponseModel "internal server error"
 // @Router /v1/notification/user/create [post]
 func createNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
-	resultChan := make(chan *dto.CreateNotiResponseModel)
-	errorChan := make(chan utils.ErrorResponseModel)
+	reqModel := &dto.CreateNotiRequestModel{}
 
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		reqModel := &dto.CreateNotiRequestModel{}
-		if err := c.BodyParser(reqModel); err != nil {
-			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
-			return
-		}
-		if err := utils.Validate.Struct(reqModel); err != nil {
-			errorChan <- utils.ErrorResponseModel{MessageDesc: err.Error(), StatusCode: 400}
-			return
-		}
-		context, contextErr := db.Connect()
-		defer db.ConnectClose(context)
-		if contextErr != nil {
-			errorChan <- utils.ErrorResponseModel{MessageDesc: contextErr.Error(), StatusCode: 500}
-			return
-		}
-
-		getUuid := auth.DecodeToken(c)["uuid"].(string)
-
-		resModel := &dto.CreateNotiResponseModel{}
-		service := &NotificationService{context}
-		serviceRes := service.CreateNoti(reqModel, resModel, getUuid, sse)
-		resultChan <- serviceRes
-	}()
-
-	go func() {
-		wg.Wait()
-		close(resultChan)
-		close(errorChan)
-	}()
-
-	select {
-	case err := <-errorChan:
-		return utils.FiberResponseErrorJson(c, err.MessageDesc, err.StatusCode)
-	case result := <-resultChan:
-		return utils.FiberResponseJson(c, result, result.StatusCode)
+	if err := c.BodyParser(reqModel); err != nil {
+		return utils.FiberResponseErrorJson(c, err.Error(), 400)
 	}
+
+	if err := utils.Validate.Struct(reqModel); err != nil {
+		return utils.FiberResponseErrorJson(c, err.Error(), 400)
+	}
+
+	context, contextErr := db.Connect()
+	defer db.ConnectClose(context)
+	if contextErr != nil {
+		return utils.FiberResponseErrorJson(c, contextErr.Error(), 500)
+	}
+
+	getUuid := auth.DecodeToken(c)["uuid"].(string)
+
+	resModel := &dto.CreateNotiResponseModel{}
+	service := &NotificationService{context}
+	serviceRes := service.CreateNoti(reqModel, resModel, getUuid, sse)
+
+	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
 }
 
 // @Tags Notification
