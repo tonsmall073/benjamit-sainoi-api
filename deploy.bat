@@ -77,8 +77,17 @@ docker tag %IMAGE_NAME%:%TAG_LATEST% %IMAGE_NAME%:%TAG_VERSION%
 docker push %IMAGE_NAME%:%TAG_LATEST%
 docker push %IMAGE_NAME%:%TAG_VERSION%
 
+@REM ----------------------DEV----------------------
 docker-compose pull
 docker-compose up -d
+
+@REM ----------------------STAGING----------------------
+@REM docker-compose -f docker-compose.staging.yml pull
+@REM docker-compose -f docker-compose.staging.yml up -d
+
+@REM ----------------------PRODUCTION----------------------
+@REM docker-compose -f docker-compose.prod.yml pull
+@REM docker-compose -f docker-compose.prod.yml up -d
 
 echo Deployment complete with version !VERSION!
 exit /b

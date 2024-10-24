@@ -6,7 +6,7 @@ services:
     # build: .
     image: tonsmall073/benjamitsainoi-backend:latest
     environment:
-      - APP_MODE=development
+      - APP_MODE=staging
     ports: 
       - "8000:8000"
     networks:

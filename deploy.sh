@@ -80,7 +80,16 @@ docker tag "$IMAGE_NAME:$TAG_LATEST" "$IMAGE_NAME:$TAG_VERSION"
 docker push "$IMAGE_NAME:$TAG_LATEST"
 docker push "$IMAGE_NAME:$TAG_VERSION"
 
+# ----------------------DEV----------------------
 docker-compose pull
 docker-compose up -d
+
+# ----------------------STAGING----------------------
+# docker-compose -f docker-compose.staging.yml pull
+# docker-compose -f docker-compose.staging.yml up -d
+
+# ----------------------PRODUCTION----------------------
+# docker-compose -f docker-compose.prod.yml pull
+# docker-compose -f docker-compose.prod.yml up -d
 
 echo "Deployment complete with version $VERSION!"
