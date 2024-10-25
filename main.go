@@ -26,16 +26,16 @@ func main() {
 	mode := os.Getenv("APP_MODE")
 	fmt.Println("App Mode : " + mode)
 	if mode == "production" {
-		if err := godotenv.Load("./envs/production.env"); err != nil {
-			log.Fatal("[ERROR] loading production.env file")
+		if err := godotenv.Load("./envs/.env.production"); err != nil {
+			log.Fatal("[ERROR] loading .env.production file")
 		}
 	} else if mode == "staging" {
-		if err := godotenv.Load("./envs/staging.env"); err != nil {
-			log.Fatal("[ERROR] loading staging.env file")
+		if err := godotenv.Load("./envs/.env.staging"); err != nil {
+			log.Fatal("[ERROR] loading .env.staging file")
 		}
 	} else {
-		if err := godotenv.Load("./envs/development.env"); err != nil {
-			log.Fatal("[ERROR] loading development.env file")
+		if err := godotenv.Load("./envs/.env.development"); err != nil {
+			log.Fatal("[ERROR] loading .env.development file")
 		}
 	}
 
