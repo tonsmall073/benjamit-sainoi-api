@@ -1,0 +1,10 @@
+.git
+.gitignore
+docs
+deploy.sh
+deploy.ps1
+deploy.bat
+version.txt
+docker-compose.prod.yml
+docker-compose.staging.yml
+docker-compose.yml
