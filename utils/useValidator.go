@@ -6,11 +6,9 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var Validate *validator.Validate
+var Validate = validator.New()
 
 func UseValidator() {
-	Validate = validator.New()
-
 	/*----------------RegisterValidation----------------*/
 	validators.Phone(Validate)
 	validators.RoleEnum(Validate)
