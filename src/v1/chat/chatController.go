@@ -127,9 +127,9 @@ func wsSendForGuest(wsCon *websocket.Conn) error {
 	if contextErr != nil {
 		return contextErr
 	}
-	getUuid := auth.WsDecodeToken(wsCon)["uuid"].(string)
+
 	service := &ChatService{context}
-	res := service.WsSendForGuest(getUuid, wsCon)
+	res := service.WsSendForGuest(wsCon)
 	return res
 }
 

@@ -98,7 +98,6 @@ func (s *ChatService) sendForGuest(
 }
 
 func (s *ChatService) WsSendForGuest(
-	uuid string,
 	wsCon *websocket.Conn,
 ) error {
 	defer wsCon.Close()
