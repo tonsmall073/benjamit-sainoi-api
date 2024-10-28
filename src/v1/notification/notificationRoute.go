@@ -4,6 +4,7 @@ import (
 	auth "bjm/auth/jwt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 	"github.com/jsorb84/ssefiber"
 )
 
@@ -14,4 +15,5 @@ func Setup(route fiber.Router, sse *ssefiber.FiberSSEApp) {
 
 	groupAuth := group.Group("/user", auth.UseUserGuard)
 	groupAuth.Post("/create", func(c *fiber.Ctx) error { return createNoti(c, sse) })
+	groupAuth.Get("/websocket/SendNoti", websocket.New(func(wsCon *websocket.Conn) { wsCreateNoti(wsCon) }))
 }

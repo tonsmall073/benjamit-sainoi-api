@@ -7,6 +7,7 @@ import (
 	"bjm/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 	"github.com/jsorb84/ssefiber"
 )
 
@@ -45,6 +46,29 @@ func createNoti(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	serviceRes := service.CreateNoti(reqModel, resModel, getUuid, sse)
 
 	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
+}
+
+// @Tags Notification
+// @Description Websocket create notification
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param input body dto.CreateNotiRequestModel true "notification request"
+// @Success 201 {object} dto.CreateNotiResponseModel "created"
+// @Failure 400 {object} utils.ErrorResponseModel "invalid input"
+// @Failure 401 {object} utils.ErrorResponseModel "unauthorized"
+// @Failure 500 {object} utils.ErrorResponseModel "internal server error"
+// @Router /v1/notification/user/websocket/SendNoti [post]
+func wsCreateNoti(wsCon *websocket.Conn) error {
+	context, contextErr := db.Connect()
+	defer db.ConnectClose(context)
+	if contextErr != nil {
+		return contextErr
+	}
+	getUuid := auth.WsDecodeToken(wsCon)["uuid"].(string)
+	service := &NotificationService{context}
+	res := service.WsCreateNoti(getUuid, wsCon)
+	return res
 }
 
 // @Tags Notification

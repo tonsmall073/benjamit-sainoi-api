@@ -6,12 +6,16 @@ import (
 	"bjm/utils"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 	"github.com/jsorb84/ssefiber"
 	"gorm.io/gorm"
 )
+
+var wsClients = make(map[*websocket.Conn]string)
 
 type ChatService struct {
 	_context *gorm.DB
@@ -49,7 +53,7 @@ func (s *ChatService) Send(
 	resModel.StatusCode = 201
 
 	resMarshal, resMarshalErr := json.Marshal(resModel)
-	if resMarshalErr == nil {
+	if resMarshalErr == nil && sse != nil {
 		channel := sse.GetChannel("/chat/user/" + resModel.Data.ChannelName)
 		if channel != nil {
 			channel.SendEvent("message", string(resMarshal))
@@ -83,7 +87,7 @@ func (s *ChatService) sendForGuest(
 	resModel.StatusCode = 201
 
 	resMarshal, resMarshalErr := json.Marshal(resModel)
-	if resMarshalErr == nil {
+	if resMarshalErr == nil && sse != nil {
 		channel := sse.GetChannel("/chat/" + resModel.Data.ChannelName)
 		if channel != nil {
 			channel.SendEvent("message", string(resMarshal))
@@ -91,6 +95,69 @@ func (s *ChatService) sendForGuest(
 	}
 
 	return resModel
+}
+
+func (s *ChatService) WsSendForGuest(
+	uuid string,
+	wsCon *websocket.Conn,
+) error {
+	defer wsCon.Close()
+	wsClients[wsCon] = "guest"
+
+	for {
+		reqModel := &dto.SendForGuestRequestModel{}
+		resModel := &dto.SendForGuestResponseModel{}
+		err := wsCon.ReadJSON(reqModel)
+		if err != nil {
+			delete(wsClients, wsCon)
+			fmt.Println("[ERROR] read json error:", err)
+			return err
+		}
+
+		s.sendForGuest(reqModel, resModel, nil)
+
+		for client, channel := range wsClients {
+			if channel == "guest" {
+				if err := client.WriteJSON(resModel); err != nil {
+					fmt.Println("[ERROR] write json error:", err)
+					client.Close()
+					delete(wsClients, client)
+				}
+			}
+		}
+	}
+}
+
+func (s *ChatService) WsSend(
+	uuid string,
+	wsCon *websocket.Conn,
+) error {
+	defer wsCon.Close()
+	wsClients[wsCon] = wsCon.Params("channelName")
+
+	for {
+		reqModel := &dto.SendRequestModel{}
+		resModel := &dto.SendResponseModel{}
+		err := wsCon.ReadJSON(reqModel)
+
+		if err != nil {
+			delete(wsClients, wsCon)
+			fmt.Println("[ERROR] read json error:", err)
+			return err
+		}
+
+		s.Send(reqModel, resModel, uuid, nil)
+
+		for client, channelName := range wsClients {
+			if channelName == reqModel.ChannelName {
+				if err := client.WriteJSON(resModel); err != nil {
+					fmt.Println("[ERROR] write json error:", err)
+					client.Close()
+					delete(wsClients, client)
+				}
+			}
+		}
+	}
 }
 
 func (s *ChatService) EventChat(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {

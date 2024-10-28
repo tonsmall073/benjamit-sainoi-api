@@ -7,6 +7,7 @@ import (
 	db "bjm/db/benjamit"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 
 	auth "bjm/auth/jwt"
 
@@ -83,6 +84,53 @@ func sendForGuest(c *fiber.Ctx, sse *ssefiber.FiberSSEApp) error {
 	serviceRes := service.sendForGuest(reqModel, resModel, sse)
 
 	return utils.FiberResponseJson(c, serviceRes, serviceRes.StatusCode)
+}
+
+// @Tags Chat
+// @Description Websocket send a message (user)
+// @Description MessageType="TEXT" | "IMAGE" | "EMOJI"
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param input body dto.SendRequestModel true "send request"
+// @Success 201 {object} dto.SendResponseModel "created"
+// @Failure 400 {object} utils.ErrorResponseModel "invalid input"
+// @Failure 401 {object} utils.ErrorResponseModel "unauthorized"
+// @Failure 500 {object} utils.ErrorResponseModel "internal server error"
+// @Router /v1/chat/user/websocket/send/{channelName} [get]
+func wsSend(wsCon *websocket.Conn) error {
+	context, contextErr := db.Connect()
+	defer db.ConnectClose(context)
+	if contextErr != nil {
+		return contextErr
+	}
+
+	getUuid := auth.WsDecodeToken(wsCon)["uuid"].(string)
+	service := &ChatService{context}
+	res := service.WsSend(getUuid, wsCon)
+	return res
+}
+
+// @Tags Chat
+// @Description Websocket send a message (guest)
+// @Description MessageType="TEXT" | "IMAGE" | "EMOJI"
+// @Accept json
+// @Produce json
+// @Param input body dto.SendForGuestRequestModel true "send request"
+// @Success 201 {object} dto.SendForGuestResponseModel "created"
+// @Failure 400 {object} utils.ErrorResponseModel "invalid input"
+// @Failure 500 {object} utils.ErrorResponseModel "internal server error"
+// @Router /v1/chat/websocket/send [get]
+func wsSendForGuest(wsCon *websocket.Conn) error {
+	context, contextErr := db.Connect()
+	defer db.ConnectClose(context)
+	if contextErr != nil {
+		return contextErr
+	}
+	getUuid := auth.WsDecodeToken(wsCon)["uuid"].(string)
+	service := &ChatService{context}
+	res := service.WsSendForGuest(getUuid, wsCon)
+	return res
 }
 
 // @Tags Chat
