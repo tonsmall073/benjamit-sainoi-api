@@ -2,7 +2,7 @@ package prefix
 
 import (
 	"bjm/db/benjamit/models"
-	"bjm/src/v1/prefix/dto"
+	"bjm/src/http/v1/prefix/dto"
 	"bjm/utils"
 
 	"gorm.io/gorm"

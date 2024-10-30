@@ -3,7 +3,7 @@ package incomeAndExpense
 import (
 	auth "bjm/auth/jwt"
 	db "bjm/db/benjamit"
-	"bjm/src/v1/incomeAndExpense/dto"
+	"bjm/src/http/v1/incomeAndExpense/dto"
 	"bjm/utils"
 	"bjm/utils/enums"
 

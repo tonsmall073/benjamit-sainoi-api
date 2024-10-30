@@ -2,7 +2,7 @@ package user
 
 import (
 	model "bjm/db/benjamit/models"
-	"bjm/src/v1/user/dto"
+	"bjm/src/http/v1/user/dto"
 	"bjm/utils"
 	"errors"
 

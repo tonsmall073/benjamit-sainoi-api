@@ -3,7 +3,7 @@ package notification
 import (
 	auth "bjm/auth/jwt"
 	db "bjm/db/benjamit"
-	"bjm/src/v1/notification/dto"
+	"bjm/src/http/v1/notification/dto"
 	"bjm/utils"
 
 	"github.com/gofiber/fiber/v2"

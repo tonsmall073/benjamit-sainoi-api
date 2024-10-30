@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "./proto/v1;v1";
+
+// LoginRequestModel สำหรับการล็อกอิน
+message LoginRequestModel {
+    string username = 1; // ชื่อผู้ใช้
+    string password = 2; // รหัสผ่าน
+}
+
+// LoginDataListResponseModel สำหรับข้อมูลผู้ใช้ที่ล็อกอิน
+message LoginDataListResponseModel {
+    string uuid = 1;         // UUID ของผู้ใช้
+    string access_token = 2; // Token สำหรับเข้าถึง
+    string username = 3;     // ชื่อผู้ใช้
+    string nickname = 4;     // ชื่อเล่น
+    string prefix_name = 5;  // คำนำหน้าชื่อ
+    string firstname = 6;    // ชื่อจริง
+    string lastname = 7;     // นามสกุล
+    string birthday = 8;     // วันเกิด (ใช้ string แทน time.Time)
+}
+
+// LoginResponseModel สำหรับผลลัพธ์ของการล็อกอิน
+message LoginResponseModel {
+    LoginDataListResponseModel data = 1; // ข้อมูลผู้ใช้
+    int32 status_code = 2;                // รหัสสถานะ
+    string message_desc = 3;              // คำอธิบายข้อความ
+}
+
+service user {
+    rpc login (LoginRequestModel) returns (LoginResponseModel);
+}

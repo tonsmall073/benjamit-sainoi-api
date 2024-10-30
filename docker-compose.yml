@@ -3,12 +3,14 @@ version: "4.0"
 services:
   backend:
     container_name: benjamit_api
-    # build: .
-    image: tonsmall073/benjamitsainoi-backend:latest
+    build: .
+
+    # image: tonsmall073/benjamitsainoi-backend:latest
     environment:
       - APP_MODE=development
     ports: 
       - "8000:8000"
+      - "50051:50051"
     networks:
       - benjamit
 

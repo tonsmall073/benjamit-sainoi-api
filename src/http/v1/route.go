@@ -1,12 +1,12 @@
 package v1
 
 import (
-	"bjm/src/v1/chat"
-	"bjm/src/v1/incomeAndExpense"
-	"bjm/src/v1/notification"
-	"bjm/src/v1/prefix"
-	"bjm/src/v1/product"
-	"bjm/src/v1/user"
+	"bjm/src/http/v1/chat"
+	"bjm/src/http/v1/incomeAndExpense"
+	"bjm/src/http/v1/notification"
+	"bjm/src/http/v1/prefix"
+	"bjm/src/http/v1/product"
+	"bjm/src/http/v1/user"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jsorb84/ssefiber"

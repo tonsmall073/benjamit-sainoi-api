@@ -1,7 +1,7 @@
 package user
 
 import (
-	"bjm/src/v2/user/dto"
+	"bjm/src/http/v2/user/dto"
 	"bjm/utils"
 
 	"github.com/gofiber/fiber/v2"

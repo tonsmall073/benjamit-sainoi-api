@@ -2,7 +2,7 @@ package chat
 
 import (
 	"bjm/db/benjamit/models"
-	"bjm/src/v1/chat/dto"
+	"bjm/src/http/v1/chat/dto"
 	"bjm/utils"
 	"encoding/json"
 	"errors"

@@ -1,9 +1,10 @@
 package main
 
 import (
-	v1 "bjm/src/v1"
-	v2 "bjm/src/v2"
+	v1 "bjm/src/http/v1"
+	v2 "bjm/src/http/v2"
 	"bjm/utils"
+	"net"
 
 	"bufio"
 	"fmt"
@@ -17,6 +18,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/jsorb84/ssefiber"
+	"google.golang.org/grpc"
+
+	gRpc "bjm/src/grpc"
 
 	_ "bjm/docs" // swagger docs
 	"bjm/middlewares"
@@ -40,7 +44,9 @@ func main() {
 	}
 
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Do you want to Start Server API Press (S)")
+	fmt.Println("Do you want to Start Http and gRpc Server API Press (HG)")
+	fmt.Println("Do you want to Start Http Server API Press (H)")
+	fmt.Println("Do you want to Start gRpc Server API Press (G)")
 	fmt.Println("Do you want to Migrate Press (M)")
 	fmt.Println("Do you want to Database Seeding Press (I)")
 	fmt.Println("Do you want to Drop ALL Tables in database name Benjamit Press (D)")
@@ -48,9 +54,13 @@ func main() {
 
 	input, _ := reader.ReadString('\n')
 	pressed := strings.TrimSpace(input)
-
-	if pressed == "S" || pressed == "s" {
+	if pressed == "HG" || pressed == "hg" {
 		startServerApi()
+		startGrpcServer()
+	} else if pressed == "H" || pressed == "h" {
+		startServerApi()
+	} else if pressed == "G" || pressed == "g" {
+		startGrpcServer()
 	} else if pressed == "M" || pressed == "m" {
 		startMigrateDB()
 	} else if pressed == "I" || pressed == "i" {
@@ -83,7 +93,23 @@ func startServerApi() {
 	v1.UseRoute(route, sse)
 	v2.UseRoute(route)
 
-	app.Listen(":" + os.Getenv("SERVER_POST"))
+	if err := app.Listen(":" + os.Getenv("HTTP_SERVER_PORT")); err != nil {
+		log.Fatalf("failed to start http server: %v", err)
+	}
+}
+
+func startGrpcServer() {
+	lis, err := net.Listen("tcp", ":"+os.Getenv("GRPC_SERVER_PORT"))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	gRpc.Register(grpcServer)
+
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to start gRpc server: %v", err)
+	}
 }
 
 func startMigrateDB() {

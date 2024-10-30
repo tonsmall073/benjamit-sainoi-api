@@ -13,5 +13,6 @@ RUN swag init
 RUN go build -o myapp main.go
 
 EXPOSE 8000
+EXPOSE 50051
 
-CMD ["sh", "-c", "echo 's' | ./myapp"]
+CMD ["sh", "-c", "echo 'hg' | ./myapp"]

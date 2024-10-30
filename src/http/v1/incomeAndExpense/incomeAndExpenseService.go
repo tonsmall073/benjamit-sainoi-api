@@ -2,7 +2,7 @@ package incomeAndExpense
 
 import (
 	"bjm/db/benjamit/models"
-	"bjm/src/v1/incomeAndExpense/dto"
+	"bjm/src/http/v1/incomeAndExpense/dto"
 	"bjm/utils"
 	"bjm/utils/enums"
 	"errors"

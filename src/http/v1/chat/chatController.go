@@ -1,7 +1,7 @@
 package chat
 
 import (
-	"bjm/src/v1/chat/dto"
+	"bjm/src/http/v1/chat/dto"
 	"bjm/utils"
 
 	db "bjm/db/benjamit"

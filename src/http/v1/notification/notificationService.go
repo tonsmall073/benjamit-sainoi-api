@@ -2,7 +2,7 @@ package notification
 
 import (
 	"bjm/db/benjamit/models"
-	"bjm/src/v1/notification/dto"
+	"bjm/src/http/v1/notification/dto"
 	"bjm/utils"
 	"encoding/json"
 	"errors"

@@ -2,7 +2,7 @@ package prefix
 
 import (
 	db "bjm/db/benjamit"
-	"bjm/src/v1/prefix/dto"
+	"bjm/src/http/v1/prefix/dto"
 	"bjm/utils"
 
 	"github.com/gofiber/fiber/v2"
