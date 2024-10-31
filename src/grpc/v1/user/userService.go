@@ -3,7 +3,7 @@ package user
 import (
 	auth "bjm/auth/jwt"
 	"bjm/db/benjamit/models"
-	v1 "bjm/proto/v1"
+	"bjm/proto/v1/user"
 	"bjm/utils"
 	"errors"
 
@@ -15,9 +15,9 @@ type UserService struct {
 }
 
 func (s *UserService) Login(
-	reqModel *v1.LoginRequestModel,
-	resModel *v1.LoginResponseModel,
-) *v1.LoginResponseModel {
+	reqModel *user.LoginRequestModel,
+	resModel *user.LoginResponseModel,
+) *user.LoginResponseModel {
 	if reqModel.Username == "" {
 		resModel.MessageDesc = "username is empty or undefined"
 		resModel.StatusCode = 3
@@ -69,9 +69,9 @@ func (s *UserService) fetchUserByUsername(username string) (models.User, error) 
 func (s *UserService) mapLoginResponseModel(
 	userData models.User,
 	token string,
-	resModel *v1.LoginResponseModel,
+	resModel *user.LoginResponseModel,
 ) {
-	data := &v1.LoginDataListResponseModel{
+	data := &user.LoginDataListResponseModel{
 		AccessToken: token,
 		Uuid:        userData.UUID.String(),
 		Username:    userData.Username,

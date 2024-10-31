@@ -2,23 +2,23 @@ package user
 
 import (
 	db "bjm/db/benjamit"
-	v1 "bjm/proto/v1"
+	"bjm/proto/v1/user"
 	"bjm/utils"
 	"context"
 )
 
 type UserServer struct {
-	v1.UnimplementedUserServer
+	user.UnimplementedUserServer
 }
 
-func (s *UserServer) Login(ctx context.Context, reqModel *v1.LoginRequestModel) (*v1.LoginResponseModel, error) {
+func (s *UserServer) Login(ctx context.Context, reqModel *user.LoginRequestModel) (*user.LoginResponseModel, error) {
 	context, contextErr := db.Connect()
 	defer db.ConnectClose(context)
 	if contextErr != nil {
-		return utils.GrpcResponseErrorJson(&v1.LoginResponseModel{}, contextErr.Error(), 13)
+		return utils.GrpcResponseErrorJson(&user.LoginResponseModel{}, contextErr.Error(), 13)
 	}
 
-	resModel := &v1.LoginResponseModel{}
+	resModel := &user.LoginResponseModel{}
 	service := &UserService{context}
 	serviceRes := service.Login(reqModel, resModel)
 

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package proto;
 
-option go_package = "./proto/v1;v1";
+option go_package = "./proto/v1/user;user";
 
 // LoginRequestModel สำหรับการล็อกอิน
 message LoginRequestModel {
