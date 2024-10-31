@@ -2,11 +2,6 @@ package utils
 
 import "github.com/gofiber/fiber/v2"
 
-type ErrorResponseModel struct {
-	MessageDesc string `json:"messageDesc"`
-	StatusCode  int    `json:"statusCode"`
-}
-
 func FiberResponseJson(c *fiber.Ctx, body interface{}, statusCode int) error {
 	if statusCode <= 0 {
 		return c.Status(500).JSON(

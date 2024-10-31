@@ -20,36 +20,36 @@ func (s *UserService) Login(
 ) *v1.LoginResponseModel {
 	if reqModel.Username == "" {
 		resModel.MessageDesc = "username is empty or undefined"
-		resModel.StatusCode = 400
+		resModel.StatusCode = 3
 		return resModel
 	}
 	if reqModel.Password == "" {
 		resModel.MessageDesc = "password is empty or undefined"
-		resModel.StatusCode = 400
+		resModel.StatusCode = 3
 		return resModel
 	}
 
 	data, dataErr := s.fetchUserByUsername(reqModel.Username)
 	if dataErr != nil {
 		resModel.MessageDesc = dataErr.Error()
-		resModel.StatusCode = 400
+		resModel.StatusCode = 3
 		return resModel
 	}
 	resCheck := utils.CheckPasswordHash(reqModel.Password, data.Password)
 	if !resCheck {
 		resModel.MessageDesc = "the password is incorrect"
-		resModel.StatusCode = 400
+		resModel.StatusCode = 3
 		return resModel
 	}
 	getToken, getTokenErr := auth.CreateToken(data.Username, data.UUID.String(), string(data.Role))
 	if getTokenErr != nil {
 		resModel.MessageDesc = getTokenErr.Error()
-		resModel.StatusCode = 500
+		resModel.StatusCode = 13
 		return resModel
 	}
 
 	s.mapLoginResponseModel(data, getToken, resModel)
-	resModel.StatusCode = 200
+	resModel.StatusCode = 0
 	resModel.MessageDesc = utils.HttpStatusCodes[200]
 	return resModel
 }
