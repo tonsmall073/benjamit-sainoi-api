@@ -105,7 +105,10 @@ func startGrpcServer() {
 	}
 
 	grpcServer := grpc.NewServer(
-		middlewares.UseApiTransactionLogGrpc(),
+		grpc.ChainUnaryInterceptor(
+			middlewares.UseApiTransactionLogGrpc(),
+			middlewares.UseTimeZoneGrpc(),
+		),
 	)
 
 	gRpc.Register(grpcServer)

@@ -117,10 +117,10 @@ func logMiddlewareGrpc(
 	return resp, err
 }
 
-func UseApiTransactionLogGrpc() grpc.ServerOption {
+func UseApiTransactionLogGrpc() grpc.UnaryServerInterceptor {
 	cleanupOnce.Do(func() {
 		go utils.LogCleanupTask(enums.GRPC)
 	})
 
-	return grpc.UnaryInterceptor(logMiddlewareGrpc)
+	return logMiddlewareGrpc
 }

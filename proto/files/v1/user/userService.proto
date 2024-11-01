@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package v1.service;
+
+option go_package = "./proto/v1/user;user";
+
+import "proto/files/v1/user/dto/loginDto.proto";
+
+service user {
+    rpc login (LoginRequestModel) returns (LoginResponseModel);
+}

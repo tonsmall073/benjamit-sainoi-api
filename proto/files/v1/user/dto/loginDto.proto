@@ -1,10 +1,9 @@
 syntax = "proto3";
 
-package v1.dto;
+package v1.service;
 
 option go_package = "./proto/v1/user;user";
 
-// LoginRequestModel สำหรับการล็อกอิน
 message LoginRequestModel {
     string username = 1; // ชื่อผู้ใช้
     string password = 2; // รหัสผ่าน
@@ -27,8 +26,4 @@ message LoginResponseModel {
     LoginDataListResponseModel data = 1; // ข้อมูลผู้ใช้
     int32 status_code = 2;                // รหัสสถานะ
     string message_desc = 3;              // คำอธิบายข้อความ
-}
-
-service user {
-    rpc login (LoginRequestModel) returns (LoginResponseModel);
 }
