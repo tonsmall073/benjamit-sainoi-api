@@ -72,6 +72,10 @@ func createEnums(db *gorm.DB) []error {
 			string(enums.MANUAL),
 			string(enums.SYSTEM),
 		},
+		"interface_type_enum": {
+			string(enums.HTTP),
+			string(enums.GRPC),
+		},
 	}
 
 	return createEnumCondition(db, enumDefinitions)

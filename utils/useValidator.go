@@ -16,4 +16,5 @@ func UseValidator() {
 	validators.MessageTypeEnum(Validate)
 	validators.TransactionTypeEnum(Validate)
 	validators.SortEnum(Validate)
+	validators.InterfaceTypeEnum(Validate)
 }

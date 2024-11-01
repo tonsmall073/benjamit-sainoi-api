@@ -2,13 +2,12 @@ package middlewares
 
 import (
 	model "bjm/db/benjamit/models"
+	"bjm/utils"
+	"bjm/utils/enums"
 	"encoding/json"
 	"log"
-	"os"
 	"regexp"
-	"strconv"
 	"sync"
-	"time"
 
 	con "bjm/db/benjamit"
 
@@ -23,46 +22,6 @@ func isValidSSEPath(path string) bool {
 	// ใช้ regex เพื่อให้ "events" เป็น path ที่ถูกต้อง
 	re := regexp.MustCompile(`^(\/.*\/)?events(\/.*)?(\?.*)?$`)
 	return re.MatchString(path)
-}
-
-func deleteOldLogs() {
-	db, dbErr := con.Connect()
-	defer con.ConnectClose(db)
-	if dbErr != nil {
-		log.Printf("[ERROR] failed to connect to database: %v\n", dbErr)
-	} else {
-		sqlDB, err := db.DB()
-		if err != nil {
-			log.Printf("[ERROR] failed to get underlying DB: %v\n", err)
-		} else if pingErr := sqlDB.Ping(); pingErr != nil {
-			log.Printf("[WARN] database connection lost: %v. Retrying...\n", pingErr)
-		} else {
-			getEnv := os.Getenv("LOG_CLEANING_DAY")
-			day := 30
-			if getEnv != "" {
-				convInt, convIntErr := strconv.Atoi(getEnv)
-				if convIntErr == nil {
-					day = convInt
-				}
-			}
-			thirtyDaysAgo := time.Now().AddDate(0, 0, -day)
-			if err := db.Unscoped().Where("created_at < ?", thirtyDaysAgo).Delete(&model.ApiTransactionLog{}).Error; err != nil {
-				log.Printf("[ERROR] failed to delete old logs: %v\n", err)
-			} else {
-				log.Printf("[INFO] deleted logs older than %d days\n", day)
-			}
-		}
-	}
-}
-
-func logCleanupTask() {
-	ticker := time.NewTicker(24 * time.Hour)
-	defer ticker.Stop()
-
-	for {
-		<-ticker.C
-		deleteOldLogs()
-	}
 }
 
 func logMiddleware() fiber.Handler {
@@ -96,14 +55,15 @@ func logMiddleware() fiber.Handler {
 				}
 
 				responseLog := model.ApiTransactionLog{
-					Path:         path,
-					Method:       method,
-					ContentType:  contentType,
-					StatusCode:   statusCode,
-					ResponseBody: responseBody,
-					RequestBody:  requestBody,
-					Headers:      string(headersJson),
-					Origin:       origin,
+					Path:          path,
+					Method:        method,
+					ContentType:   contentType,
+					StatusCode:    statusCode,
+					ResponseBody:  responseBody,
+					RequestBody:   requestBody,
+					Headers:       string(headersJson),
+					Origin:        origin,
+					InterfaceType: enums.HTTP,
 				}
 				db, dbErr := con.Connect()
 				defer con.ConnectClose(db)
@@ -124,7 +84,7 @@ func logMiddleware() fiber.Handler {
 
 func UseApiTransactionLog(app *fiber.App) fiber.Router {
 	cleanupOnce.Do(func() {
-		go logCleanupTask()
+		go utils.LogCleanupTask(enums.HTTP)
 	})
 
 	return app.Group("", logMiddleware())

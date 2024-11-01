@@ -104,7 +104,10 @@ func startGrpcServer() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		middlewares.UseApiTransactionLogGrpc(),
+	)
+
 	gRpc.Register(grpcServer)
 
 	if err := grpcServer.Serve(lis); err != nil {
