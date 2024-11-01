@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	User_Login_FullMethodName = "/dto.user/login"
+	User_Login_FullMethodName = "/v1.dto.user/login"
 )
 
 // UserClient is the client API for User service.
@@ -108,7 +108,7 @@ func _User_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var User_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "dto.user",
+	ServiceName: "v1.dto.user",
 	HandlerType: (*UserServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

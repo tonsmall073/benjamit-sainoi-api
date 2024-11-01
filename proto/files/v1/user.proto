@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package dto;
+package v1.dto;
 
 option go_package = "./proto/v1/user;user";
 
