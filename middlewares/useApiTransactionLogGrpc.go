@@ -13,7 +13,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 )
 
@@ -23,10 +22,6 @@ func logMiddlewareGrpc(
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
-	p, ok := peer.FromContext(ctx)
-	if ok {
-		log.Printf("[INFO] Request from %s", p.Addr)
-	}
 	resp, err := handler(ctx, req)
 	if err != nil {
 		log.Printf("[ERROR] Response : %v", err)
@@ -78,6 +73,11 @@ func logMiddlewareGrpc(
 		originList := md.Get("origin")
 		if len(originList) > 0 {
 			origin = originList[0]
+		}
+		if addr := md["remote_addr"]; len(addr) > 0 {
+			log.Printf("[INFO] gRpc Request from %s", addr[0])
+		} else {
+			log.Printf("[INFO] gRpc Request from %s", "localhost")
 		}
 	}
 

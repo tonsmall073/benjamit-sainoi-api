@@ -106,6 +106,7 @@ func startGrpcServer() {
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
+			middlewares.UseLimitRequestGrpc(),
 			middlewares.UseApiTransactionLogGrpc(),
 			middlewares.UseTimeZoneGrpc(),
 		),
