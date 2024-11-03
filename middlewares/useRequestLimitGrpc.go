@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	requestCount = make(map[string]int)
+	requestCount = make(map[string]map[string]int)
 	timerMap     = make(map[string]*time.Timer)
 )
 
@@ -40,16 +40,20 @@ func limitRequestGrpc(
 		// return nil, status.Error(codes.Internal, "could not get client IP")
 	}
 
-	_, isExist := requestCount[ip]
-	if !isExist {
-		requestCount[ip] = 0
+	if requestCount[ip] == nil {
+		requestCount[ip] = make(map[string]int)
 	}
 
-	if requestCount[ip] >= defaultMax {
+	_, isExist := requestCount[ip][info.FullMethod]
+	if !isExist {
+		requestCount[ip][info.FullMethod] = 0
+	}
+
+	if requestCount[ip][info.FullMethod] >= defaultMax {
 		errorResponse := utils.ErrorResponseModel{MessageDesc: "request limit exceeded", StatusCode: 8}
 		return errorResponse, status.Error(codes.ResourceExhausted, "request limit exceeded")
 	} else {
-		requestCount[ip]++
+		requestCount[ip][info.FullMethod]++
 	}
 
 	resetTimer(ip, defaultExpiration)
